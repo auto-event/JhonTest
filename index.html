@@ -1445,7 +1445,7 @@
     el.pillClientId.textContent = "ClientID: " + (clientIds.length ? clientIds.length + " tersimpan" : "Belum");
     el.pillClientId.className = "pill" + (clientIds.length ? " ok" : "");
 
-    el.addAccountBtn.disabled = !gsiReady || clientIds.length === 0;
+    el.addAccountBtn.disabled = false; // login akun sekarang lewat backend, tidak butuh Client ID GSI/gsiReady
 
     var activeCount = accounts.length;
     if (activeCount > 0){
@@ -1507,7 +1507,28 @@
   function removeAccount(idx){
     if (running){ showToast("Tidak bisa hapus akun saat sedang upload"); return; }
     var acc = accounts[idx];
-    if (acc && acc.token && window.google){
+    if (!acc) return;
+    if (acc.clientId === "backend"){
+      // Akun dikelola backend: hapus refresh_token-nya di server dulu, baru hilangkan dari daftar lokal.
+      showToast("Menghapus akun dari backend...");
+      backendRemoveAccount(acc.backendAccountId).then(function(res){
+        if (res && res.error){
+          log("Gagal hapus akun di backend: " + res.error, "error");
+          showToast("Gagal hapus akun di backend");
+          return;
+        }
+        accounts.splice(idx, 1);
+        if (activeAccountIndex >= accounts.length) activeAccountIndex = Math.max(0, accounts.length - 1);
+        persistAccounts();
+        log("Akun " + (acc.channelTitle || acc.email || "") + " dihapus dari backend & daftar.", "info");
+        updateGeneralUi();
+      }).catch(function(e){
+        log("Gagal terhubung ke backend saat hapus akun: " + e, "error");
+        showToast("Gagal terhubung ke backend");
+      });
+      return;
+    }
+    if (acc.token && window.google){
       try { window.google.accounts.oauth2.revoke(acc.token, function(){}); } catch (e){}
     }
     accounts.splice(idx, 1);
