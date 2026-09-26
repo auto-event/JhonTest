@@ -180,6 +180,7 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn-ghost" id="reloginAllBtn" style="display:none;flex-shrink:0;">Login ulang yang habis</button>
           <button class="btn-primary" id="addAccountBtn" style="flex:1;min-width:140px;">+ TAMBAH AKUN</button>
+          <button class="btn-ghost" id="resetBackendSecretBtn" style="flex-shrink:0;" title="Ganti SHARED_SECRET backend yang tersimpan di browser ini">Ganti Secret</button>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;">
             Limit/akun:
             <input type="text" id="limitPerAccountInput" value="100" style="width:48px;text-align:center;padding:8px 6px;">
@@ -425,6 +426,17 @@
     }
     return v || "";
   }
+  // Hapus SHARED_SECRET lama yang tersimpan di browser ini, minta yang baru, lalu tarik ulang daftar akun.
+  // Dipakai kalau kamu ganti SHARED_SECRET di Code.gs (redeploy) supaya tools ikut sinkron tanpa buka console.
+  function resetBackendSecret(){
+    try { localStorage.removeItem("yt_csv_backend_secret"); } catch (e){}
+    var v = window.prompt("Masukkan SHARED_SECRET backend yang BARU (dari Code.gs):");
+    if (!v){ showToast("Dibatalkan, secret lama tetap dipakai kalau masih ada"); return; }
+    try { localStorage.setItem("yt_csv_backend_secret", v); } catch (e){}
+    showToast("Secret diganti, menyinkronkan ulang akun...");
+    log("SHARED_SECRET backend diganti manual lewat tombol 'Ganti Secret'.", "info");
+    refreshAccountsFromBackend();
+  }
   function backendCall(action, extra){
     var body = Object.assign({ action: action, secret: getBackendSecret() }, extra || {});
     return fetch(BACKEND_URL, {
@@ -600,6 +612,7 @@
     modeLiveBtn: document.getElementById("modeLiveBtn"),
     modeNote: document.getElementById("modeNote"),
     addAccountBtn: document.getElementById("addAccountBtn"),
+    resetBackendSecretBtn: document.getElementById("resetBackendSecretBtn"),
     limitPerAccountInput: document.getElementById("limitPerAccountInput"),
     accountsList: document.getElementById("accountsList"),
     pillGsi: document.getElementById("pillGsi"),
@@ -2743,6 +2756,7 @@
   // ================= EVENT LISTENERS =================
   el.saveClientIdBtn.addEventListener("click", saveClientId);
   el.addAccountBtn.addEventListener("click", doAddAccountViaBackend);
+  el.resetBackendSecretBtn.addEventListener("click", resetBackendSecret);
   el.limitPerAccountInput.addEventListener("change", function(){
     limitAutoManaged = false;   // user pernah ubah manual -> jangan ditimpa lagi saat ganti mode
     updateLimitPerAccount();
