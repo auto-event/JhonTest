@@ -180,6 +180,7 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn-ghost" id="reloginAllBtn" style="display:none;flex-shrink:0;">Login ulang yang habis</button>
           <button class="btn-primary" id="addAccountBtn" style="flex:1;min-width:140px;">+ TAMBAH AKUN</button>
+          <button class="btn-ghost" id="syncAccountsBtn" style="flex-shrink:0;" title="Tarik ulang daftar akun dari backend (pakai ini kalau akun sudah sukses ditambahkan di tab lain tapi belum muncul di sini)">&#8635; Sinkron Akun</button>
           <button class="btn-ghost" id="resetBackendSecretBtn" style="flex-shrink:0;" title="Ganti SHARED_SECRET backend yang tersimpan di browser ini">Ganti Secret</button>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;">
             Limit/akun:
@@ -195,6 +196,10 @@
           Kalau 1 akun Google punya beberapa Brand Account/channel, <b>switch dulu manual</b> di studio.youtube.com ke channel yang dimaksud
           sebelum klik Tambah Akun, supaya token yang didapat terikat ke channel yang benar. Kalau semua akun cuma channel utama
           (tanpa Brand Account), langsung Tambah Akun saja, tidak perlu switch apa pun.
+          <br><br>
+          <b>Di HP (terutama tab browser banyak/nyangkut):</b> setelah halaman backend bilang &ldquo;Akun berhasil ditambahkan&rdquo;, kadang tool
+          <b>tidak otomatis mendeteksi tab itu ditutup</b> (misal kamu pencet tombol back/panah balik, bukan menutup tab-nya) &mdash; padahal
+          akunnya <b>sudah tersimpan di backend</b>. Kalau daftar akun di sini masih kosong, cukup klik <b>&#8635; Sinkron Akun</b>, tidak perlu ulang proses login.
         </div>
         <div id="accountsList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;"></div>
       </div>
@@ -321,6 +326,21 @@
         </div>
 
         <button class="btn-ghost" id="fixThumbsBtn" style="display:none;width:100%;margin-bottom:14px;">Perbaiki Thumbnail Gagal</button>
+
+        <div class="note-box" style="margin-bottom:14px;">
+          <label class="checkbox-lbl" style="margin-bottom:8px;">
+            <input type="checkbox" id="autoCommentChk"> Post komentar otomatis setelah SEMUA event selesai dibuat
+          </label>
+          <div class="field" style="margin-bottom:8px;">
+            <textarea id="autoCommentText" rows="2" placeholder="Teks komentar yang akan diposting ke tiap video/jadwal live yang sukses..."></textarea>
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">
+            Komentar <b>tidak</b> diposting langsung setelah tiap event dibuat (video/broadcast baru butuh waktu "matang" di YouTube,
+            kalau dipaksa langsung sering gagal <code class="inline">processingFailure</code>). Jadi urutannya: <b>semua event dibuat dulu sampai selesai</b>,
+            lalu tool otomatis mengulang dari event pertama dan memposting komentar satu-satu (dengan jeda + retry otomatis).
+          </div>
+          <button class="btn-ghost" id="postCommentsBtn" style="width:100%;">Post Komentar Sekarang (manual, untuk event yang sudah Sukses)</button>
+        </div>
 
         <div style="margin-bottom:14px; display:none;" id="progressWrap">
           <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;">
@@ -465,17 +485,41 @@
   }
   // Buka tab baru ke backend ?action=login -- OAuth server-side, refresh_token tersimpan
   // di Apps Script, tidak pernah balik ke browser. Setelah tab ditutup, refresh daftar akun.
+  // Di HP, window.open/tab-closed detection sering tidak reliable (user pencet back, bukan close tab,
+  // atau browser mobile tidak melaporkan win.closed dengan benar) -> makanya juga dengar event
+  // "kembali ke tab ini" (visibilitychange/focus) sebagai sinyal cadangan, plus tombol "Sinkron Akun" manual.
   function doAddAccountViaBackend(){
     var loginUrl = BACKEND_URL + "?action=login";
     var win = window.open(loginUrl, "_blank");
     showToast("Login di tab baru, lalu kembali sini");
-    log("Login akun baru dibuka di tab baru (backend Apps Script). Setelah selesai (tab menutup sendiri), akun otomatis muncul di daftar.", "info");
+    log("Login akun baru dibuka di tab baru (backend Apps Script). Setelah selesai, akun otomatis muncul di daftar " +
+        "(kalau tidak muncul otomatis, klik 'Sinkron Akun').", "info");
     var pollCount = 0;
+    var done = false;
+    var finish = function (){
+      if (done) return;
+      done = true;
+      clearInterval(iv);
+      document.removeEventListener("visibilitychange", onBack);
+      window.removeEventListener("focus", onBack);
+      refreshAccountsFromBackend();
+    };
     var iv = setInterval(function (){
       pollCount++;
-      if (win && win.closed){ clearInterval(iv); refreshAccountsFromBackend(); }
-      if (pollCount > 200) clearInterval(iv); // stop setelah ~10 menit
+      if (win && win.closed){ finish(); return; }
+      if (pollCount > 200) finish(); // stop setelah ~10 menit, tetap coba sinkron sekali
     }, 3000);
+    // Cadangan: begitu tab/app ini aktif lagi (user balik dari tab login, apapun caranya), coba sinkron.
+    var onBack = function (){
+      if (document.visibilityState && document.visibilityState !== "visible") return;
+      finish();
+    };
+    document.addEventListener("visibilitychange", onBack);
+    window.addEventListener("focus", onBack);
+  }
+  function syncAccountsBtnClick(){
+    showToast("Menyinkronkan akun...");
+    refreshAccountsFromBackend();
   }
   // Sinkronkan accounts[] lokal dengan daftar akun di backend.
   function refreshAccountsFromBackend(){
@@ -612,6 +656,7 @@
     modeLiveBtn: document.getElementById("modeLiveBtn"),
     modeNote: document.getElementById("modeNote"),
     addAccountBtn: document.getElementById("addAccountBtn"),
+    syncAccountsBtn: document.getElementById("syncAccountsBtn"),
     resetBackendSecretBtn: document.getElementById("resetBackendSecretBtn"),
     limitPerAccountInput: document.getElementById("limitPerAccountInput"),
     accountsList: document.getElementById("accountsList"),
@@ -652,6 +697,9 @@
     clearLogBtn: document.getElementById("clearLogBtn"),
     downloadLogBtn: document.getElementById("downloadLogBtn"),
     fixThumbsBtn: document.getElementById("fixThumbsBtn"),
+    autoCommentChk: document.getElementById("autoCommentChk"),
+    autoCommentText: document.getElementById("autoCommentText"),
+    postCommentsBtn: document.getElementById("postCommentsBtn"),
     restoreBanner: document.getElementById("restoreBanner"),
 
     downloadTemplateBtn: document.getElementById("downloadTemplateBtn"),
@@ -2403,6 +2451,89 @@
     next();
   }
 
+  // ================= KOMENTAR OTOMATIS (commentThreads.insert) =================
+  // Video/broadcast yang BARU dibuat butuh waktu untuk "matang" di backend YouTube -> commentThreads.insert
+  // yang ditembak langsung setelah videos.insert/liveBroadcasts.insert sering gagal (processingFailure/400,
+  // kadang forbidden/403). Solusinya BUKAN comment per-event di tengah loop upload, tapi:
+  //   1) selesaikan dulu SEMUA event (video/jadwal live) di loop utama,
+  //   2) baru setelah itu, loop LAGI dari awal daftar event yang sukses dan post komentar satu-satu,
+  //      dengan jeda awal + retry berjenjang (sama pola dengan setThumbnailWithRetry di atas).
+  function postCommentWithRetry(videoId, token, text, cb){
+    var attempt = 0, MAX_ATTEMPTS = 4;
+    var tryOnce = function(){
+      attempt++;
+      fetch("https://www.googleapis.com/youtube/v3/commentThreads?part=snippet", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify({ snippet: { videoId: videoId, topLevelComment: { snippet: { textOriginal: text } } } })
+      }).then(function(r){
+        if (r.ok){ cb(null, attempt); return; }
+        return r.text().then(function(t){
+          var isProcessing = /processingFailure/i.test(t);
+          var retryable = (r.status === 400 && isProcessing) || r.status === 429 || r.status >= 500;
+          if (retryable && attempt < MAX_ATTEMPTS){
+            // video/broadcast belum "matang" atau rate limit sesaat -> tunggu makin lama tiap percobaan
+            var delayMs = [5000, 10000, 20000][attempt - 1] || 20000;
+            log("⏳ Komentar belum bisa diposting (" + r.status + (isProcessing ? " processingFailure" : "") + "), coba lagi dalam " + (delayMs / 1000) + " detik (percobaan " + (attempt + 1) + "/" + MAX_ATTEMPTS + ")...", "info");
+            setTimeout(tryOnce, delayMs);
+            return;
+          }
+          var c = classifyApiError(r.status, t);
+          var reason = c.quota ? "kuota habis" :
+            r.status === 403 ? "ditolak (403, komentar mungkin dimatikan di channel/video ini)" :
+            (isProcessing ? "video masih diproses YouTube setelah " + attempt + "x coba (processingFailure)" : "gagal (" + r.status + ")");
+          cb(reason, attempt);
+        });
+      }).catch(function(e){ cb(e.message || String(e), attempt); });
+    };
+    tryOnce();
+  }
+
+  // Post komentar yang SAMA ke tiap event yang sukses dibuat pada sesi bulk-create ini.
+  // Dipanggil SETELAH loop utama (runBulkCreate) selesai, bukan di tengah-tengah.
+  // targets: opsional, default = semua event ready. skipInitialDelay: true kalau dipicu manual (event sudah lama dibuat, gak perlu tunggu).
+  function runAutoComments(targets, skipInitialDelay){
+    var text = (el.autoCommentText && el.autoCommentText.value || "").trim();
+    if (!text){ if (skipInitialDelay) showToast("Isi dulu teks komentarnya"); return; }
+    if (!skipInitialDelay && (!el.autoCommentChk || !el.autoCommentChk.checked)) return;
+    var rows = (targets || events).filter(function(r){ return r.status === "sukses" && r.videoId; });
+    if (!rows.length){ log("Komentar otomatis: tidak ada event sukses untuk dikomentari.", "info"); if (skipInitialDelay) showToast("Belum ada event Sukses untuk dikomentari"); return; }
+
+    log("Menunggu sejenak lalu mulai posting komentar otomatis ke " + rows.length + " event (dari awal daftar)...", "info");
+    if (el.postCommentsBtn) el.postCommentsBtn.disabled = true;
+    var i = 0, ok = 0, failed = 0, noAcc = 0;
+    function next(){
+      if (i >= rows.length){
+        if (el.postCommentsBtn) el.postCommentsBtn.disabled = false;
+        log("Selesai komentar otomatis: " + ok + " berhasil, " + failed + " gagal, " + noAcc + " butuh login akun dulu.", ok ? "success" : "error");
+        showToast(ok + " komentar terkirim" + ((failed || noAcc) ? ", " + (failed + noAcc) + " belum" : ""));
+        return;
+      }
+      var row = rows[i];
+      var acc = accounts.find(function(a){
+        return !isTokenExpired(a) && ((a.channelTitle && a.channelTitle === row.uploadedVia) || (a.email && a.email === row.uploadedVia));
+      });
+      if (!acc){
+        log("⏭ Lewati komentar \"" + row.title + "\": akun \"" + row.uploadedVia + "\" belum login/tokennya habis.", "error");
+        noAcc++; i++; next();
+        return;
+      }
+      ensureFreshToken(acc).then(function(freshToken){
+        postCommentWithRetry(row.videoId, freshToken, text, function(err){
+          if (err){ log("✗ Komentar \"" + row.title + "\" gagal: " + err, "error"); failed++; }
+          else { log("✓ Komentar terpasang di \"" + row.title + "\".", "success"); ok++; }
+          i++;
+          setTimeout(next, 2000);   // jeda antar-komentar biar gak kena rate limit
+        });
+      }).catch(function(err2){
+        log("✗ Komentar \"" + row.title + "\" gagal: token akun tidak bisa diperbarui (" + err2.message + ")", "error");
+        failed++; i++; setTimeout(next, 500);
+      });
+    }
+    // jeda awal sebelum event PERTAMA sekalipun, karena baru saja selesai dibuat di loop utama
+    setTimeout(next, skipInitialDelay ? 0 : 5000);
+  }
+
   // ================= UPLOAD KE YOUTUBE (videos.insert) =================
   // token dioper eksplisit (bukan global) supaya jelas akun mana yang dipakai tiap panggilan.
   function uploadOneEvent(row, token, videoBlob, cb){
@@ -2561,6 +2692,7 @@
         log("Bulk upload selesai", "success");
         if (lastRun){ lastRun.finished = true; lastRun.reason = "selesai"; lastRun.done = idx; }
         saveStateNow();
+        runAutoComments(targets);
         return;
       }
 
@@ -2597,6 +2729,7 @@
         saveStateNow();
         targets.forEach(function(t){ var r = findEventById(t._id); if (r && r.status === "loading") r.status = "ready"; });
         renderEventsTable();
+        runAutoComments(targets);
         return;
       }
 
@@ -2756,6 +2889,7 @@
   // ================= EVENT LISTENERS =================
   el.saveClientIdBtn.addEventListener("click", saveClientId);
   el.addAccountBtn.addEventListener("click", doAddAccountViaBackend);
+  if (el.syncAccountsBtn) el.syncAccountsBtn.addEventListener("click", syncAccountsBtnClick);
   el.resetBackendSecretBtn.addEventListener("click", resetBackendSecret);
   el.limitPerAccountInput.addEventListener("change", function(){
     limitAutoManaged = false;   // user pernah ubah manual -> jangan ditimpa lagi saat ganti mode
@@ -2794,6 +2928,7 @@
     renderEventsTable();
   });
   el.uploadAllBtn.addEventListener("click", runBulkCreate);
+  if (el.postCommentsBtn) el.postCommentsBtn.addEventListener("click", function(){ runAutoComments(events, true); });
   el.pauseBtn.addEventListener("click", function(){
     if (!running) return;
     paused = !paused;
