@@ -118,6 +118,10 @@
   .acc-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .acc-quota{font-size:10.5px;color:var(--muted);flex-shrink:0;text-align:right;}
   .acc-quota b{color:var(--text);}
+  .acc-quota .shared-note{display:block;color:#60a5fa;font-weight:700;font-size:10.5px;margin-top:3px;}
+  .acc-card.exhausted .acc-quota .shared-note{color:#fbbf24;}
+  .client-quota-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:11.5px;line-height:1.5;color:#fcd34d;}
+  .client-quota-banner b{color:#fff;}
   .acc-badge-active{font-size:9.5px;font-weight:700;color:var(--red);background:rgba(255,0,0,.15);padding:2px 7px;border-radius:999px;flex-shrink:0;}
   .acc-relogin{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--text);cursor:pointer;font-size:10.5px;font-weight:600;padding:5px 9px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
   .acc-relogin:hover{background:rgba(255,255,255,.16);}
@@ -134,7 +138,7 @@
       <div class="brand-icon">&#9654;</div>
       <div>
         <h1>YouTube Jhony Auto Tools</h1>
-        <p>Bulk jadwal dari Excel/CSV &bull; WIB &rarr; YouTube (upload video <b>atau</b> jadwal live)</p>
+        <p>Bulk jadwal dari Excel/CSV &bull; WIB &rarr; YouTube (upload video <b>atau</b> jadwal live) <span style="opacity:.5;">&bull; build 2026-09-26-quota-shared</span></p>
       </div>
     </div>
     <div id="userChip" class="user-chip"><span class="dot off"></span>&nbsp;0 Akun</div>
@@ -182,8 +186,8 @@
           <button class="btn-primary" id="addAccountBtn" style="flex:1;min-width:140px;">+ TAMBAH AKUN</button>
           <button class="btn-ghost" id="syncAccountsBtn" style="flex-shrink:0;" title="Tarik ulang daftar akun dari backend (pakai ini kalau akun sudah sukses ditambahkan di tab lain tapi belum muncul di sini)">&#8635; Sinkron Akun</button>
           <button class="btn-ghost" id="resetBackendSecretBtn" style="flex-shrink:0;" title="Ganti SHARED_SECRET backend yang tersimpan di browser ini">Ganti Secret</button>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;">
-            Limit/akun:
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;" title="Kuota harian ini milik Client ID (dibagi bersama semua akun yang login pakai Client ID yang sama), bukan jatah tiap akun.">
+            Limit/Client ID:
             <input type="text" id="limitPerAccountInput" value="100" style="width:48px;text-align:center;padding:8px 6px;">
             event
           </div>
@@ -782,11 +786,11 @@
     // status lama milik mode sebelumnya tidak relevan lagi: baris yang belum sukses dikembalikan ke ready
     events.forEach(function(r){ if (r.status === "gagal" || r.status === "skip") { r.status = "ready"; r.message = ""; } });
     log("Mode diganti ke: " + (m === "live" ? "Jadwal Live" : "Upload Video") + ".", "info");
-    // Kalau "Limit/akun" belum pernah diubah manual, ikutkan ke kuota harian per Client ID mode baru (66 live / 100 video).
+    // Kalau "Limit/Client ID" belum pernah diubah manual, ikutkan ke kuota harian per Client ID mode baru (66 live / 100 video).
     if (limitAutoManaged){
       limitPerAccount = eventsPerDayPerClient(m);
       el.limitPerAccountInput.value = limitPerAccount;
-      log("Limit/akun otomatis disesuaikan ke " + limitPerAccount + " (kuota " + (m === "live" ? "jadwal live" : "upload video") + " per Client ID/hari).", "info");
+      log("Limit/Client ID otomatis disesuaikan ke " + limitPerAccount + " (kuota " + (m === "live" ? "jadwal live" : "upload video") + " per Client ID/hari).", "info");
       saveState();
     }
     applyModeUi();
@@ -807,6 +811,13 @@
   }
   function lsSetRaw(key, val){ try { localStorage.setItem(key, val); } catch (e){} }
   function accountsOfClient(cid){ return accounts.filter(function(a){ return a.clientId === cid; }); }
+  // Kuota harian (limitPerAccount, 66 live / 100 video) itu milik Client ID, DIBAGI BERSAMA semua akun
+  // yang login pakai Client ID yang sama -- bukan jatah masing-masing akun. Jadi "terpakai" yang benar
+  // untuk dibandingkan ke limitPerAccount adalah total usedCount seluruh akun se-Client ID, bukan usedCount
+  // akun itu sendiri. acc.usedCount tetap disimpan per akun (buat histori "akun ini upload event apa saja").
+  function usedCountForClient(cid){
+    return accountsOfClient(cid).reduce(function(sum, a){ return sum + (a.usedCount || 0); }, 0);
+  }
 
   // ================= UMUR TOKEN =================
   // Token akses Google berlaku ~60 menit. Dianggap habis di menit ke-55 supaya ada jeda aman sebelum ditolak (401).
@@ -1538,17 +1549,49 @@
       updateReloginAllBtn();
       return;
     }
+    // Kuota "quotaExceeded" itu milik Client ID (project Google Cloud), bukan milik akun.
+    // Jadi kalau salah satu akun di suatu Client ID kena quotaExceeded, SEMUA akun di Client ID itu
+    // ditandai clientQuotaFull, walaupun usedCount masing-masing akun belum sampai limitPerAccount.
+    // Kumpulkan dulu Client ID mana saja yang lagi penuh, supaya bisa ditampilkan satu banner
+    // penjelas di atas daftar, alih-alih klien bingung lihat "5/66" tapi statusnya "Kuota Client habis".
+    var fullClientIds = {};
+    accounts.forEach(function(a){
+      if (a.clientQuotaFull) fullClientIds[a.clientId] = (fullClientIds[a.clientId] || 0) + 1;
+    });
+    var fullClientIdKeys = Object.keys(fullClientIds);
+    var bannerHtml = "";
+    if (fullClientIdKeys.length > 0){
+      var lines = fullClientIdKeys.map(function(cid){
+        return "Client " + escapeHtml(shortClientId(cid)) + " (" + fullClientIds[cid] + " akun)";
+      }).join(", ");
+      bannerHtml = '<div class="client-quota-banner">&#9888; <b>Kuota harian Client ID habis</b> untuk: ' + lines +
+        '. Kuota ini <b>dibagi bersama semua akun</b> yang pakai Client ID yang sama &mdash; jadi walaupun angka "terpakai/limit" tiap akun masih kecil, statusnya tetap "Kuota Client habis" karena satu Client ID sudah kena batas Google. Tambah Client ID baru atau tunggu reset esok hari (waktu Pasifik).</div>';
+    }
     var html = "";
     accounts.forEach(function(acc, idx){
       var isActive = idx === activeAccountIndex && running;
       var remMs = tokenRemainingMs(acc);
       var tokenDead = acc.expired || remMs <= 0;
       var tokenWarn = !tokenDead && remMs <= TOKEN_WARN_MS;
-      var isExhausted = acc.usedCount >= limitPerAccount || !!acc.clientQuotaFull || !!acc.uploadLimitBlocked;
+      // Dipakai bersama: bandingkan TOTAL terpakai semua akun se-Client ID ke limitPerAccount,
+      // bukan usedCount akun ini sendiri -- karena kuotanya memang milik Client ID.
+      var clientUsed = usedCountForClient(acc.clientId);
+      var clientMates = accountsOfClient(acc.clientId).length;
+      var isShared = clientMates > 1;
+      var isExhausted = clientUsed >= limitPerAccount || !!acc.clientQuotaFull || !!acc.uploadLimitBlocked;
       var cls = "acc-card" + (isActive ? " active" : "") + (isExhausted ? " exhausted" : "");
       var avatarHtml = acc.picture
         ? '<img src="' + escapeHtml(acc.picture) + '" alt="">'
         : (acc.email ? acc.email.charAt(0).toUpperCase() : "?");
+      var statusLabel = tokenDead ? "Token habis" :
+        (appMode === "live" && acc.liveBlocked) ? "Live belum aktif" :
+        acc.uploadLimitBlocked ? "Batas upload channel" :
+        acc.clientQuotaFull ? "Kuota Client habis" :
+        (isExhausted ? "Habis" : "Sisa " + (limitPerAccount - clientUsed));
+      // Tampilkan total terpakai per Client ID (bukan usedCount akun ini sendiri), supaya angkanya
+      // konsisten dengan status di sebelahnya. Kalau Client ID dipakai >1 akun, kasih catatan "bersama".
+      var quotaNumberHtml = clientUsed + '/' + limitPerAccount +
+        (isShared ? '<span class="shared-note">&#128279; bersama ' + clientMates + ' akun</span>' : '');
       html += '<div class="' + cls + '">' +
         '<div class="acc-avatar">' + avatarHtml + '</div>' +
         '<div class="acc-info">' +
@@ -1556,12 +1599,12 @@
           '<div class="acc-sub">' + escapeHtml(acc.email || "") + ' &bull; Client ' + escapeHtml(shortClientId(acc.clientId)) + '</div>' +
         '</div>' +
         (isActive ? '<span class="acc-badge-active">AKTIF</span>' : '') +
-        '<div class="acc-quota">' + acc.usedCount + '/' + limitPerAccount + '<br><b>' + (tokenDead ? "Token habis" : (appMode === "live" && acc.liveBlocked ? "Live belum aktif" : acc.uploadLimitBlocked ? "Batas upload channel" : acc.clientQuotaFull ? "Kuota Client habis" : (isExhausted ? "Habis" : "Sisa " + (limitPerAccount - acc.usedCount)))) + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</b></div>' +
+        '<div class="acc-quota">' + quotaNumberHtml + '<br><b>' + statusLabel + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</b></div>' +
         ((tokenDead || tokenWarn) && !running ? '<button class="acc-relogin' + (tokenDead ? ' urgent' : '') + '" data-relogin="' + idx + '" title="Login ulang akun ini">Login ulang</button>' : '') +
         '<button class="acc-remove" data-idx="' + idx + '" title="Hapus akun ini">&times;</button>' +
         '</div>';
     });
-    el.accountsList.innerHTML = html;
+    el.accountsList.innerHTML = bannerHtml + html;
     Array.prototype.forEach.call(el.accountsList.querySelectorAll(".acc-relogin"), function(btn){
       btn.addEventListener("click", function(){
         var i = parseInt(this.getAttribute("data-relogin"), 10);
@@ -1887,7 +1930,7 @@
         target.expired = false;
         silentRefreshFails[target.id] = 0;
         if (!target.email && d.email){ target.email = d.email; target.name = d.name; target.picture = d.picture; }
-        log("✓ Login ulang berhasil: " + (target.email || "akun") + ". Token baru dipakai sampai sekitar " + Math.round(tokenRemainingMs(target) / 60000) + " menit lagi. Penggunaan " + target.usedCount + "/" + limitPerAccount + " dipertahankan.", "success");
+        log("✓ Login ulang berhasil: " + (target.email || "akun") + ". Token baru dipakai sampai sekitar " + Math.round(tokenRemainingMs(target) / 60000) + " menit lagi. Penggunaan Client ID " + usedCountForClient(target.clientId) + "/" + limitPerAccount + " dipertahankan.", "success");
         showToast("Login ulang berhasil");
         finishRelogin(true);
       })
@@ -2704,7 +2747,9 @@
   // Return null kalau semua akun sudah habis kuotanya.
   function getNextAvailableAccount(){
     for (var i = activeAccountIndex; i < accounts.length; i++){
-      if (accounts[i].usedCount < limitPerAccount && !isTokenExpired(accounts[i]) && !accounts[i].clientQuotaFull && !accounts[i].uploadLimitBlocked && !(appMode === "live" && accounts[i].liveBlocked)){
+      // Kuotanya milik Client ID, dibagi bersama semua akun se-Client ID -- jadi yang dibandingkan
+      // ke limitPerAccount adalah total usedCount seluruh akun di Client ID itu, bukan punya akun ini saja.
+      if (usedCountForClient(accounts[i].clientId) < limitPerAccount && !isTokenExpired(accounts[i]) && !accounts[i].clientQuotaFull && !accounts[i].uploadLimitBlocked && !(appMode === "live" && accounts[i].liveBlocked)){
         activeAccountIndex = i;
         return accounts[i];
       }
@@ -2738,9 +2783,11 @@
     lastRun = { startedAt: Date.now(), total: targets.length, done: 0, finished: false, account: null, reason: "berjalan" };
     saveStateNow();
     // Rekam kondisi kuota tiap akun di awal supaya jelas kenapa satu akun dipakai/dilewati.
+    // "Terpakai" di sini = total gabungan Client ID (bukan usedCount akun itu sendiri), karena kuotanya bersama.
     accounts.forEach(function(a, i){
-      log("Akun #" + (i+1) + " " + (a.channelTitle || a.email || "(belum ada info)") + ": terpakai " + a.usedCount + "/" + limitPerAccount +
-          (a.usedCount >= limitPerAccount ? " -> PENUH, akan dilewati" : "") + (a.expired ? " (token habis)" : ""), "info");
+      var cUsed = usedCountForClient(a.clientId);
+      log("Akun #" + (i+1) + " " + (a.channelTitle || a.email || "(belum ada info)") + " [Client " + shortClientId(a.clientId) + "]: terpakai " + cUsed + "/" + limitPerAccount +
+          (cUsed >= limitPerAccount ? " -> Client ID PENUH, akan dilewati" : "") + (a.expired ? " (token habis)" : ""), "info");
     });
     // Kapasitas nyata = jumlah Client ID yang punya akun login x ~5 video. Beri tahu kalau target melebihinya.
     var activeClients = {};
@@ -2752,7 +2799,7 @@
       log("Peringatan: target " + targets.length + " event melebihi perkiraan kapasitas " + estCap + ". Sisanya kemungkinan ditolak Google (quotaExceeded). Tambah Client ID dari project lain untuk menambah kuota.", "error");
     }
     if (targets.length <= limitPerAccount && accounts.length > 1){
-      log("Catatan: jumlah event (" + targets.length + ") tidak melebihi limit/akun (" + limitPerAccount + "), jadi SEMUA event akan dikerjakan akun pertama saja. Akun lain baru dipakai kalau akun pertama penuh. Kecilkan 'Limit/akun' kalau ingin dibagi ke beberapa akun.", "info");
+      log("Catatan: jumlah event (" + targets.length + ") tidak melebihi limit/Client ID (" + limitPerAccount + "), jadi SEMUA event akan dikerjakan akun pertama saja (dan akun lain yang se-Client ID dengannya ikut menggunakan jatah yang sama). Akun di Client ID lain baru dipakai kalau Client ID pertama penuh. Kecilkan 'Limit/Client ID' kalau ingin dibagi lebih awal.", "info");
     }
 
     running = true;
@@ -2761,7 +2808,7 @@
     el.progressWrap.style.display = "block";
     el.progressLabel.textContent = "0/" + targets.length;
     el.progressFill.style.width = "0%";
-    log("Mulai bulk upload " + targets.length + " event ke " + accounts.length + " akun (limit " + limitPerAccount + " event/akun)...", "info");
+    log("Mulai bulk upload " + targets.length + " event ke " + accounts.length + " akun (limit " + limitPerAccount + " event/hari per Client ID, dibagi bersama akun yang se-Client ID)...", "info");
 
     var idx = 0;
     function next(){
@@ -2793,7 +2840,7 @@
           else if (a.uploadLimitBlocked) nUp++;
           else if (a.clientQuotaFull) nQuota++;
           else if (appMode === "live" && a.liveBlocked) nLive++;
-          else if (a.usedCount >= limitPerAccount) nLimit++;
+          else if (usedCountForClient(a.clientId) >= limitPerAccount) nLimit++;
         });
         if (nUp > 0 && nUp >= nTok + nLimit + nQuota + nLive){
           showToast("Berhenti: channel kena batas upload harian YouTube");
@@ -2806,7 +2853,7 @@
           log("Semua akun tidak bisa dipakai (token habis: " + nTok + ", limit tercapai: " + nLimit + ", kuota Client habis: " + nQuota + ", batas upload channel: " + nUp + (appMode === "live" ? ", live belum aktif: " + nLive : "") + "). Sisa " + (targets.length - idx) + " event belum diproses. Tambah akun / Client ID, login ulang, atau naikkan limit untuk lanjut.", "error");
         }
         accounts.forEach(function(a, i){
-          log("  Akun #" + (i+1) + " " + (a.channelTitle || a.email || "?") + ": " + a.usedCount + "/" + limitPerAccount + (a.expired ? " (token habis)" : ""), "error");
+          log("  Akun #" + (i+1) + " " + (a.channelTitle || a.email || "?") + " [Client " + shortClientId(a.clientId) + "]: " + usedCountForClient(a.clientId) + "/" + limitPerAccount + (a.expired ? " (token habis)" : ""), "error");
         });
         if (lastRun){ lastRun.finished = true; lastRun.reason = "semua akun habis"; lastRun.done = idx; }
         saveStateNow();
@@ -2873,8 +2920,8 @@
             log("✓ SUKSES" + (appMode === "live" ? " (jadwal live)" : "") + " via " + (acc.channelTitle || acc.email) + ": " + row.title + " -> id " + res.videoId +
                 (res.unitsUsed ? " (" + res.unitsUsed + " unit)" : ""), "success");
             if (res.warnings && res.warnings.length) log("  ⚠ Catatan: " + res.warnings.join("; "), "error");
-            if (acc.usedCount >= limitPerAccount){
-              log("Akun " + (acc.channelTitle || acc.email) + " sudah mencapai limit " + limitPerAccount + " event, pindah ke akun berikutnya" + (activeAccountIndex + 1 < accounts.length ? " (akun #" + (activeAccountIndex + 2) + ")." : ", TAPI tidak ada akun berikutnya."), "info");
+            if (usedCountForClient(acc.clientId) >= limitPerAccount){
+              log("Client ID " + shortClientId(acc.clientId) + " (dipakai akun " + (acc.channelTitle || acc.email) + ") sudah mencapai limit " + limitPerAccount + " event/hari, pindah ke akun berikutnya" + (activeAccountIndex + 1 < accounts.length ? " (akun #" + (activeAccountIndex + 2) + ")." : ", TAPI tidak ada akun berikutnya."), "info");
               activeAccountIndex++;
             }
             idx++;
