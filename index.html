@@ -338,6 +338,8 @@
             Komentar <b>tidak</b> diposting langsung setelah tiap event dibuat (video/broadcast baru butuh waktu "matang" di YouTube,
             kalau dipaksa langsung sering gagal <code class="inline">processingFailure</code>). Jadi urutannya: <b>semua event dibuat dulu sampai selesai</b>,
             lalu tool otomatis mengulang dari event pertama dan memposting komentar satu-satu (dengan jeda + retry otomatis).
+            Khusus <b>mode Jadwal Live</b>: yang dipakai otomatis adalah <b>Live Chat</b> (bukan kolom komentar biasa), karena broadcast yang
+            masih "upcoming" belum punya comment thread biasa &mdash; panel Live Chat-nya yang sudah aktif duluan.
           </div>
           <button class="btn-ghost" id="postCommentsBtn" style="width:100%;">Post Komentar Sekarang (manual, untuk event yang sudah Sukses)</button>
         </div>
@@ -524,7 +526,18 @@
   // Sinkronkan accounts[] lokal dengan daftar akun di backend.
   function refreshAccountsFromBackend(){
     return backendListAccounts().then(function (res){
-      if (res.error){ log("Gagal ambil daftar akun dari backend: " + res.error, "error"); return; }
+      if (res.error){
+        if (res.error === "unauthorized"){
+          // Ini penyebab paling umum dari "sukses ditambahkan tapi tidak muncul di tools":
+          // SHARED_SECRET di Code.gs sudah diganti/redeploy, tapi browser ini masih pakai secret LAMA
+          // yang tersimpan di localStorage -> backend selalu menolak listAccounts/getToken.
+          log("Gagal ambil daftar akun dari backend: SECRET SALAH/TIDAK COCOK (unauthorized). Kalau kamu baru ganti SHARED_SECRET di Code.gs, klik tombol 'Ganti Secret' dan masukkan secret yang BARU.", "error");
+          showToast("Secret backend tidak cocok — klik 'Ganti Secret'");
+        } else {
+          log("Gagal ambil daftar akun dari backend: " + res.error, "error");
+        }
+        return;
+      }
       var byId = {}; accounts.forEach(function (a){ if (a.backendAccountId) byId[a.backendAccountId] = a; });
       res.forEach(function (r){
         if (byId[r.accountId]){
@@ -2305,6 +2318,7 @@
         }
         var bc; try { bc = JSON.parse(txt); } catch (e){ cb({ ok: false, error: "Response broadcast bukan JSON valid" }); return; }
         var videoId = bc.id;   // id broadcast = id video di YouTube
+        var liveChatId = bc.snippet && bc.snippet.liveChatId ? bc.snippet.liveChatId : null;   // dipakai buat post pesan ke Live Chat (bukan comment biasa)
         var warnings = [];
 
         // ---- tahap 2: thumbnail (retry otomatis kalau kena rate limit 429, burst limit thumbnails.set beda dari kuota harian) ----
@@ -2361,7 +2375,7 @@
         };
 
         stepThumb(function(){ stepTags(function(){
-          cb({ ok: true, videoId: videoId, warnings: warnings, unitsUsed: costUsed, error: warnings.length ? warnings.join("; ") : null });
+          cb({ ok: true, videoId: videoId, liveChatId: liveChatId, warnings: warnings, unitsUsed: costUsed, error: warnings.length ? warnings.join("; ") : null });
         }); });
       });
     }).catch(function(e){ cb({ ok: false, error: e.message || String(e) }); });
@@ -2451,13 +2465,19 @@
     next();
   }
 
-  // ================= KOMENTAR OTOMATIS (commentThreads.insert) =================
+  // ================= KOMENTAR OTOMATIS (commentThreads.insert / liveChatMessages.insert) =================
   // Video/broadcast yang BARU dibuat butuh waktu untuk "matang" di backend YouTube -> commentThreads.insert
   // yang ditembak langsung setelah videos.insert/liveBroadcasts.insert sering gagal (processingFailure/400,
   // kadang forbidden/403). Solusinya BUKAN comment per-event di tengah loop upload, tapi:
   //   1) selesaikan dulu SEMUA event (video/jadwal live) di loop utama,
   //   2) baru setelah itu, loop LAGI dari awal daftar event yang sukses dan post komentar satu-satu,
   //      dengan jeda awal + retry berjenjang (sama pola dengan setThumbnailWithRetry di atas).
+  //
+  // PENTING untuk mode Jadwal Live: broadcast yang masih "upcoming" (belum live) TIDAK punya comment
+  // thread biasa sama sekali -- yang aktif cuma panel Live Chat, walau broadcast-nya belum mulai.
+  // Makanya untuk row.mode === "live" (dan ada row.liveChatId dari liveBroadcasts.insert), kita pakai
+  // liveChatMessages.insert, BUKAN commentThreads.insert. Untuk mode Video (VOD biasa) tetap pakai
+  // commentThreads.insert seperti biasa.
   function postCommentWithRetry(videoId, token, text, cb){
     var attempt = 0, MAX_ATTEMPTS = 4;
     var tryOnce = function(){
@@ -2480,13 +2500,64 @@
           }
           var c = classifyApiError(r.status, t);
           var reason = c.quota ? "kuota habis" :
-            r.status === 403 ? "ditolak (403, komentar mungkin dimatikan di channel/video ini)" :
+            r.status === 403 ? "ditolak (403, komentar mungkin dimatikan di channel/video ini, atau video ini live upcoming -> pakai Live Chat, bukan comment biasa)" :
             (isProcessing ? "video masih diproses YouTube setelah " + attempt + "x coba (processingFailure)" : "gagal (" + r.status + ")");
           cb(reason, attempt);
         });
       }).catch(function(e){ cb(e.message || String(e), attempt); });
     };
     tryOnce();
+  }
+
+  // Post pesan ke Live Chat broadcast (liveChatMessages.insert). Dipakai untuk mode Jadwal Live,
+  // karena broadcast upcoming belum punya comment thread biasa, tapi panel Live Chat-nya SUDAH aktif.
+  function postLiveChatMessageWithRetry(liveChatId, token, text, cb){
+    var attempt = 0, MAX_ATTEMPTS = 4;
+    var tryOnce = function(){
+      attempt++;
+      fetch("https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet", {
+        method: "POST",
+        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
+        body: JSON.stringify({
+          snippet: {
+            liveChatId: liveChatId,
+            type: "textMessageEvent",
+            textMessageDetails: { messageText: text }
+          }
+        })
+      }).then(function(r){
+        if (r.ok){ cb(null, attempt); return; }
+        return r.text().then(function(t){
+          var permanent = /liveChatEnded|liveChatNotFound|liveChatDisabled/i.test(t);
+          var retryable = !permanent && (r.status === 429 || r.status >= 500 || (r.status === 403 && attempt === 1));
+          // liveChat baru dibuat butuh sedikit waktu juga untuk siap menerima pesan -> retry singkat dulu
+          if (retryable && attempt < MAX_ATTEMPTS){
+            var delayMs = [3000, 6000, 12000][attempt - 1] || 12000;
+            log("⏳ Pesan Live Chat belum bisa diposting (" + r.status + "), coba lagi dalam " + (delayMs / 1000) + " detik (percobaan " + (attempt + 1) + "/" + MAX_ATTEMPTS + ")...", "info");
+            setTimeout(tryOnce, delayMs);
+            return;
+          }
+          var c = classifyApiError(r.status, t);
+          var reason = c.quota ? "kuota habis" :
+            /liveChatEnded/i.test(t) ? "live chat sudah berakhir (broadcast selesai)" :
+            /liveChatNotFound/i.test(t) ? "live chat tidak ditemukan (liveChatId tidak valid/broadcast dihapus)" :
+            r.status === 403 ? "ditolak (403, live chat mungkin dimatikan di broadcast ini)" :
+            "gagal (" + r.status + ")";
+          cb(reason, attempt);
+        });
+      }).catch(function(e){ cb(e.message || String(e), attempt); });
+    };
+    tryOnce();
+  }
+
+  // Fallback untuk event LAMA (dibuat sebelum liveChatId disimpan otomatis): tanya YouTube langsung
+  // liveChatId dari videoId broadcast-nya, supaya tidak perlu bikin ulang jadwal live-nya.
+  function fetchLiveChatId(videoId, token){
+    return fetch("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&id=" + encodeURIComponent(videoId), {
+      headers: { "Authorization": "Bearer " + token }
+    }).then(function(r){ return r.json(); }).then(function(d){
+      return (d.items && d.items[0] && d.items[0].snippet && d.items[0].snippet.liveChatId) || null;
+    }).catch(function(){ return null; });
   }
 
   // Post komentar yang SAMA ke tiap event yang sukses dibuat pada sesi bulk-create ini.
@@ -2496,7 +2567,7 @@
     var text = (el.autoCommentText && el.autoCommentText.value || "").trim();
     if (!text){ if (skipInitialDelay) showToast("Isi dulu teks komentarnya"); return; }
     if (!skipInitialDelay && (!el.autoCommentChk || !el.autoCommentChk.checked)) return;
-    var rows = (targets || events).filter(function(r){ return r.status === "sukses" && r.videoId; });
+    var rows = (targets || events).filter(function(r){ return r.status === "sukses" && (r.videoId || r.liveChatId); });
     if (!rows.length){ log("Komentar otomatis: tidak ada event sukses untuk dikomentari.", "info"); if (skipInitialDelay) showToast("Belum ada event Sukses untuk dikomentari"); return; }
 
     log("Menunggu sejenak lalu mulai posting komentar otomatis ke " + rows.length + " event (dari awal daftar)...", "info");
@@ -2519,11 +2590,23 @@
         return;
       }
       ensureFreshToken(acc).then(function(freshToken){
-        postCommentWithRetry(row.videoId, freshToken, text, function(err){
-          if (err){ log("✗ Komentar \"" + row.title + "\" gagal: " + err, "error"); failed++; }
-          else { log("✓ Komentar terpasang di \"" + row.title + "\".", "success"); ok++; }
-          i++;
-          setTimeout(next, 2000);   // jeda antar-komentar biar gak kena rate limit
+        // Mode Jadwal Live dengan liveChatId -> pakai Live Chat (comment thread biasa belum aktif untuk broadcast upcoming).
+        // Mode Video (VOD) atau live tanpa liveChatId (fallback) -> comment thread biasa.
+        var wantsLiveChat = row.mode === "live";
+        var getLiveChatId = (wantsLiveChat && !row.liveChatId)
+          ? fetchLiveChatId(row.videoId, freshToken).then(function(id){ row.liveChatId = id; return id; })
+          : Promise.resolve(row.liveChatId);
+        getLiveChatId.then(function(liveChatId){
+          var useLiveChat = wantsLiveChat && liveChatId;
+          var poster = useLiveChat
+            ? function(cb2){ postLiveChatMessageWithRetry(liveChatId, freshToken, text, cb2); }
+            : function(cb2){ postCommentWithRetry(row.videoId, freshToken, text, cb2); };
+          poster(function(err){
+            if (err){ log("✗ " + (useLiveChat ? "Pesan Live Chat" : "Komentar") + " \"" + row.title + "\" gagal: " + err, "error"); failed++; }
+            else { log("✓ " + (useLiveChat ? "Pesan Live Chat terkirim" : "Komentar terpasang") + " di \"" + row.title + "\".", "success"); ok++; }
+            i++;
+            setTimeout(next, 2000);   // jeda antar-komentar biar gak kena rate limit
+          });
         });
       }).catch(function(err2){
         log("✗ Komentar \"" + row.title + "\" gagal: token akun tidak bisa diperbarui (" + err2.message + ")", "error");
@@ -2779,6 +2862,7 @@
           } else if (res.ok){
             row.status = "sukses";
             row.videoId = res.videoId;
+            row.liveChatId = res.liveChatId || null;
             row.message = appMode === "live" ? (res.warnings && res.warnings.length ? "Jadwal live dibuat, tapi: " + res.warnings.join("; ") : "Jadwal live dibuat") : "Sukses diupload";
             row.uploadedVia = acc.channelTitle || acc.email;
             row.mode = appMode;
