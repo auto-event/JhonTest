@@ -122,6 +122,19 @@
   .acc-card.exhausted .acc-quota .shared-note{color:#fbbf24;}
   .client-quota-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:11.5px;line-height:1.5;color:#fcd34d;}
   .client-quota-banner b{color:#fff;}
+  .client-group{margin-bottom:14px;}
+  .client-group:last-child{margin-bottom:0;}
+  .client-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px 10px 0 0;border-bottom:none;font-size:11px;color:var(--muted);}
+  .client-group-head b{color:var(--text);}
+  .client-group-head .cg-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:999px;overflow:hidden;max-width:120px;}
+  .client-group-head .cg-bar{height:100%;background:#3b82f6;border-radius:999px;}
+  .client-group-head.full .cg-bar{background:#ef4444;}
+  .client-group-body{border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
+  .client-group-body .acc-card{border-radius:0;border-left:none;border-right:none;border-bottom:none;}
+  .client-group-body .acc-card:first-child{border-top:none;}
+  .client-group.solo .client-group-head{display:none;}
+  .client-group.solo .client-group-body{border:none;border-radius:0;}
+  .client-group.solo .acc-card{border-radius:12px;}
   .acc-badge-active{font-size:9.5px;font-weight:700;color:var(--red);background:rgba(255,0,0,.15);padding:2px 7px;border-radius:999px;flex-shrink:0;}
   .acc-relogin{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--text);cursor:pointer;font-size:10.5px;font-weight:600;padding:5px 9px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
   .acc-relogin:hover{background:rgba(255,255,255,.16);}
@@ -1552,8 +1565,6 @@
     // Kuota "quotaExceeded" itu milik Client ID (project Google Cloud), bukan milik akun.
     // Jadi kalau salah satu akun di suatu Client ID kena quotaExceeded, SEMUA akun di Client ID itu
     // ditandai clientQuotaFull, walaupun usedCount masing-masing akun belum sampai limitPerAccount.
-    // Kumpulkan dulu Client ID mana saja yang lagi penuh, supaya bisa ditampilkan satu banner
-    // penjelas di atas daftar, alih-alih klien bingung lihat "5/66" tapi statusnya "Kuota Client habis".
     var fullClientIds = {};
     accounts.forEach(function(a){
       if (a.clientQuotaFull) fullClientIds[a.clientId] = (fullClientIds[a.clientId] || 0) + 1;
@@ -1567,43 +1578,73 @@
       bannerHtml = '<div class="client-quota-banner">&#9888; <b>Kuota harian Client ID habis</b> untuk: ' + lines +
         '. Kuota ini <b>dibagi bersama semua akun</b> yang pakai Client ID yang sama &mdash; jadi walaupun angka "terpakai/limit" tiap akun masih kecil, statusnya tetap "Kuota Client habis" karena satu Client ID sudah kena batas Google. Tambah Client ID baru atau tunggu reset esok hari (waktu Pasifik).</div>';
     }
-    var html = "";
-    accounts.forEach(function(acc, idx){
-      var isActive = idx === activeAccountIndex && running;
-      var remMs = tokenRemainingMs(acc);
-      var tokenDead = acc.expired || remMs <= 0;
-      var tokenWarn = !tokenDead && remMs <= TOKEN_WARN_MS;
-      // Dipakai bersama: bandingkan TOTAL terpakai semua akun se-Client ID ke limitPerAccount,
-      // bukan usedCount akun ini sendiri -- karena kuotanya memang milik Client ID.
-      var clientUsed = usedCountForClient(acc.clientId);
-      var clientMates = accountsOfClient(acc.clientId).length;
-      var isShared = clientMates > 1;
-      var isExhausted = clientUsed >= limitPerAccount || !!acc.clientQuotaFull || !!acc.uploadLimitBlocked;
-      var cls = "acc-card" + (isActive ? " active" : "") + (isExhausted ? " exhausted" : "");
-      var avatarHtml = acc.picture
-        ? '<img src="' + escapeHtml(acc.picture) + '" alt="">'
-        : (acc.email ? acc.email.charAt(0).toUpperCase() : "?");
-      var statusLabel = tokenDead ? "Token habis" :
-        (appMode === "live" && acc.liveBlocked) ? "Live belum aktif" :
-        acc.uploadLimitBlocked ? "Batas upload channel" :
-        acc.clientQuotaFull ? "Kuota Client habis" :
-        (isExhausted ? "Habis" : "Sisa " + (limitPerAccount - clientUsed));
-      // Tampilkan total terpakai per Client ID (bukan usedCount akun ini sendiri), supaya angkanya
-      // konsisten dengan status di sebelahnya. Kalau Client ID dipakai >1 akun, kasih catatan "bersama".
-      var quotaNumberHtml = clientUsed + '/' + limitPerAccount +
-        (isShared ? '<span class="shared-note">&#128279; bersama ' + clientMates + ' akun</span>' : '');
-      html += '<div class="' + cls + '">' +
-        '<div class="acc-avatar">' + avatarHtml + '</div>' +
-        '<div class="acc-info">' +
-          '<div class="acc-name">' + escapeHtml(acc.channelTitle || acc.name || acc.email || ("Akun " + (idx+1))) + '</div>' +
-          '<div class="acc-sub">' + escapeHtml(acc.email || "") + ' &bull; Client ' + escapeHtml(shortClientId(acc.clientId)) + '</div>' +
-        '</div>' +
-        (isActive ? '<span class="acc-badge-active">AKTIF</span>' : '') +
-        '<div class="acc-quota">' + quotaNumberHtml + '<br><b>' + statusLabel + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</b></div>' +
-        ((tokenDead || tokenWarn) && !running ? '<button class="acc-relogin' + (tokenDead ? ' urgent' : '') + '" data-relogin="' + idx + '" title="Login ulang akun ini">Login ulang</button>' : '') +
-        '<button class="acc-remove" data-idx="' + idx + '" title="Hapus akun ini">&times;</button>' +
-        '</div>';
+
+    // Kelompokkan akun per Client ID, urutan grup mengikuti urutan kemunculan pertama tiap Client ID
+    // di array accounts (supaya urutan akun #1, #2 dst di kartu tetap konsisten dengan router).
+    var groupOrder = [];
+    var groups = {};
+    accounts.forEach(function(a, idx){
+      var cid = a.clientId;
+      if (!groups[cid]){ groups[cid] = []; groupOrder.push(cid); }
+      groups[cid].push(idx);
     });
+
+    var html = "";
+    groupOrder.forEach(function(cid){
+      var memberIdxs = groups[cid];
+      var clientUsed = usedCountForClient(cid);
+      var isSolo = memberIdxs.length === 1;
+      var groupIsFull = clientUsed >= limitPerAccount || memberIdxs.some(function(i){ return accounts[i].clientQuotaFull; });
+      var pct = Math.max(0, Math.min(100, Math.round((clientUsed / limitPerAccount) * 100)));
+
+      // Header grup: SATU angka kuota per Client ID (bukan diulang di tiap kartu), plus siapa saja
+      // yang berbagi jatah itu. Disembunyikan lewat CSS (.client-group.solo) kalau cuma 1 akun,
+      // karena "dibagi 1" tidak perlu dijelaskan.
+      var headHtml = '<div class="client-group-head' + (groupIsFull ? ' full' : '') + '">' +
+        '<span>Client <b>' + escapeHtml(shortClientId(cid)) + '</b> &bull; ' + memberIdxs.length + ' akun berbagi jatah ini</span>' +
+        '<span class="cg-bar-wrap"><span class="cg-bar" style="width:' + pct + '%;"></span></span>' +
+        '<b>' + clientUsed + '/' + limitPerAccount + '</b>' +
+        '</div>';
+
+      var bodyHtml = "";
+      memberIdxs.forEach(function(idx){
+        var acc = accounts[idx];
+        var isActive = idx === activeAccountIndex && running;
+        var remMs = tokenRemainingMs(acc);
+        var tokenDead = acc.expired || remMs <= 0;
+        var tokenWarn = !tokenDead && remMs <= TOKEN_WARN_MS;
+        var isExhausted = groupIsFull || !!acc.uploadLimitBlocked;
+        var cls = "acc-card" + (isActive ? " active" : "") + (isExhausted ? " exhausted" : "");
+        var avatarHtml = acc.picture
+          ? '<img src="' + escapeHtml(acc.picture) + '" alt="">'
+          : (acc.email ? acc.email.charAt(0).toUpperCase() : "?");
+        var statusLabel = tokenDead ? "Token habis" :
+          (appMode === "live" && acc.liveBlocked) ? "Live belum aktif" :
+          acc.uploadLimitBlocked ? "Batas upload channel" :
+          acc.clientQuotaFull ? "Kuota Client habis" :
+          (groupIsFull ? "Habis" : "Sisa " + (limitPerAccount - clientUsed));
+        // Di dalam kartu akun sendiri, TIDAK lagi menampilkan "X/66" (itu sudah ada satu kali di header
+        // grup di atas). Yang ditampilkan di sini cuma kontribusi akun ini: berapa event yang SUDAH ia
+        // upload sendiri -- angka kecil, informatif, tapi tidak mengulang limit supaya tidak menyesatkan.
+        var contribHtml = isSolo
+          ? '<b>' + statusLabel + '</b>'
+          : (acc.usedCount || 0) + ' event via akun ini<br><b>' + statusLabel + '</b>';
+        bodyHtml += '<div class="' + cls + '">' +
+          '<div class="acc-avatar">' + avatarHtml + '</div>' +
+          '<div class="acc-info">' +
+            '<div class="acc-name">' + escapeHtml(acc.channelTitle || acc.name || acc.email || ("Akun " + (idx+1))) + '</div>' +
+            '<div class="acc-sub">' + escapeHtml(acc.email || "") + (isSolo ? ' &bull; Client ' + escapeHtml(shortClientId(acc.clientId)) : '') + '</div>' +
+          '</div>' +
+          (isActive ? '<span class="acc-badge-active">AKTIF</span>' : '') +
+          '<div class="acc-quota">' + contribHtml + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</div>' +
+          ((tokenDead || tokenWarn) && !running ? '<button class="acc-relogin' + (tokenDead ? ' urgent' : '') + '" data-relogin="' + idx + '" title="Login ulang akun ini">Login ulang</button>' : '') +
+          '<button class="acc-remove" data-idx="' + idx + '" title="Hapus akun ini">&times;</button>' +
+          '</div>';
+      });
+
+      html += '<div class="client-group' + (isSolo ? ' solo' : '') + '">' + headHtml + '<div class="client-group-body">' + bodyHtml + '</div></div>';
+    });
+
     el.accountsList.innerHTML = bannerHtml + html;
     Array.prototype.forEach.call(el.accountsList.querySelectorAll(".acc-relogin"), function(btn){
       btn.addEventListener("click", function(){
