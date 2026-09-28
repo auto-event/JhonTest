@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>YouTube Jhony Auto Tools</title>
+<title>YouTube Obot CS v4.8 (Vanilla JS)</title>
 <meta name="theme-color" content="#0f0f0f">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="YT Auto Event">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f00'/%3E%3Cpath d='M26 20v24l20-12z' fill='%23fff'/%3E%3C/svg%3E">
 <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABw0lEQVR42tWXMU4DMRBFn+2IFoIUQKkoqegQB0DAPejpKKnouAQHIFdIkzsg0REoUgASBWXY9aewFy8IpJhssjDSyLvrkf/32H89BkBgY7spuBTcCrxADbmPY14KNuuYdfAjwUODoD/5g+DoK4mDWkDR8OzrWShq7wcVeE8w+SZgUV5NcCLoWeAM6AMecCzeXMTqA2dGcAdsh2TENVm8ecAA90YBuDWztEtANqYig7IN3oyZvJGcA++DdzpgTCNLMAPPCLS+DoMB7OxAUQRRuTmFM5N2jQnt6qpUltLrq3R+Lq2shO/OpZhMzyPQ7UpPT/qwmxvp+DjFObcEAi8vkvfSdJqIXF1J/X6IsTb4QglIgURZhlaSHh+l09MlZaAiUNnbW3oejaTDw7AcM2SiGUEbE4YD2NsLKplVonNlwPs0++k07IWtrRY24XAo7e//Sg35BJ6fE/BkIp2cfAbO/B/kEVhbk4oipP3iQtrYSP0Z0vs9gV5Pur6WdndTX6czV4WUVw84B2X5+WDSfKd5fkFSHcXeN6NgpfLonxQkzZqxwDiWZX6JwD5iji0wiFlYZm2oiDlo/WLyJ65mf+Jy2tr1/B2tpNgY4uYfJAAAAABJRU5ErkJggg==">
-<link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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">
-<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
+<link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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">
 <style>
   :root{
     --bg:#0f0f0f; --panel:#212121; --border:#303030; --red:#ff0000; --text:#f1f1f1; --muted:#9a9a9a;
@@ -118,23 +118,6 @@
   .acc-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .acc-quota{font-size:10.5px;color:var(--muted);flex-shrink:0;text-align:right;}
   .acc-quota b{color:var(--text);}
-  .acc-quota .shared-note{display:block;color:#60a5fa;font-weight:700;font-size:10.5px;margin-top:3px;}
-  .acc-card.exhausted .acc-quota .shared-note{color:#fbbf24;}
-  .client-quota-banner{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:11.5px;line-height:1.5;color:#fcd34d;}
-  .client-quota-banner b{color:#fff;}
-  .client-group{margin-bottom:14px;}
-  .client-group:last-child{margin-bottom:0;}
-  .client-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px 10px 0 0;border-bottom:none;font-size:11px;color:var(--muted);}
-  .client-group-head b{color:var(--text);}
-  .client-group-head .cg-bar-wrap{flex:1;height:5px;background:var(--border);border-radius:999px;overflow:hidden;max-width:120px;}
-  .client-group-head .cg-bar{height:100%;background:#3b82f6;border-radius:999px;}
-  .client-group-head.full .cg-bar{background:#ef4444;}
-  .client-group-body{border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;overflow:hidden;}
-  .client-group-body .acc-card{border-radius:0;border-left:none;border-right:none;border-bottom:none;}
-  .client-group-body .acc-card:first-child{border-top:none;}
-  .client-group.solo .client-group-head{display:none;}
-  .client-group.solo .client-group-body{border:none;border-radius:0;}
-  .client-group.solo .acc-card{border-radius:12px;}
   .acc-badge-active{font-size:9.5px;font-weight:700;color:var(--red);background:rgba(255,0,0,.15);padding:2px 7px;border-radius:999px;flex-shrink:0;}
   .acc-relogin{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:var(--text);cursor:pointer;font-size:10.5px;font-weight:600;padding:5px 9px;border-radius:8px;flex-shrink:0;white-space:nowrap;}
   .acc-relogin:hover{background:rgba(255,255,255,.16);}
@@ -150,8 +133,8 @@
     <div class="brand">
       <div class="brand-icon">&#9654;</div>
       <div>
-        <h1>YouTube Jhony Auto Tools</h1>
-        <p>Bulk jadwal dari Excel/CSV &bull; WIB &rarr; YouTube (upload video <b>atau</b> jadwal live) <span style="opacity:.5;">&bull; build 2026-09-26-quota-shared</span></p>
+        <h1>YouTube Obot CS v4.8</h1>
+        <p>Bulk jadwal dari Excel/CSV &bull; WIB &rarr; YouTube (upload video <b>atau</b> jadwal live)</p>
       </div>
     </div>
     <div id="userChip" class="user-chip"><span class="dot off"></span>&nbsp;0 Akun</div>
@@ -197,10 +180,8 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn-ghost" id="reloginAllBtn" style="display:none;flex-shrink:0;">Login ulang yang habis</button>
           <button class="btn-primary" id="addAccountBtn" style="flex:1;min-width:140px;">+ TAMBAH AKUN</button>
-          <button class="btn-ghost" id="syncAccountsBtn" style="flex-shrink:0;" title="Tarik ulang daftar akun dari backend (pakai ini kalau akun sudah sukses ditambahkan di tab lain tapi belum muncul di sini)">&#8635; Sinkron Akun</button>
-          <button class="btn-ghost" id="resetBackendSecretBtn" style="flex-shrink:0;" title="Ganti SHARED_SECRET backend yang tersimpan di browser ini">Ganti Secret</button>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;" title="Kuota harian ini milik Client ID (dibagi bersama semua akun yang login pakai Client ID yang sama), bukan jatah tiap akun.">
-            Limit/Client ID:
+          <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);white-space:nowrap;">
+            Limit/akun:
             <input type="text" id="limitPerAccountInput" value="100" style="width:48px;text-align:center;padding:8px 6px;">
             event
           </div>
@@ -213,10 +194,6 @@
           Kalau 1 akun Google punya beberapa Brand Account/channel, <b>switch dulu manual</b> di studio.youtube.com ke channel yang dimaksud
           sebelum klik Tambah Akun, supaya token yang didapat terikat ke channel yang benar. Kalau semua akun cuma channel utama
           (tanpa Brand Account), langsung Tambah Akun saja, tidak perlu switch apa pun.
-          <br><br>
-          <b>Di HP (terutama tab browser banyak/nyangkut):</b> setelah halaman backend bilang &ldquo;Akun berhasil ditambahkan&rdquo;, kadang tool
-          <b>tidak otomatis mendeteksi tab itu ditutup</b> (misal kamu pencet tombol back/panah balik, bukan menutup tab-nya) &mdash; padahal
-          akunnya <b>sudah tersimpan di backend</b>. Kalau daftar akun di sini masih kosong, cukup klik <b>&#8635; Sinkron Akun</b>, tidak perlu ulang proses login.
         </div>
         <div id="accountsList" style="margin-top:12px; display:flex; flex-direction:column; gap:8px;"></div>
       </div>
@@ -228,8 +205,12 @@
       <div class="note-box" style="margin-top:14px;">
         <b>Mode video biasa (bukan live streaming):</b> tool ini pakai <code class="inline">videos.insert</code> saja (tanpa <code class="inline">thumbnails.set</code>,
         thumbnail otomatis diambil YouTube dari gambar di dalam video), jadi <b>tidak butuh</b> channel di-enable untuk live streaming
-        dan tidak butuh verifikasi telepon untuk thumbnail custom. Video di-upload sebagai <code class="inline">private</code> dengan
-        <code class="inline">publishAt</code> terjadwal (WIB dikonversi ke UTC) &mdash; otomatis tayang saat jadwalnya tiba.
+        dan tidak butuh verifikasi telepon untuk thumbnail custom. Kalau kolom <code class="inline">privacy</code> diisi <code class="inline">private</code>,
+        video di-upload sebagai <code class="inline">private</code> dengan <code class="inline">publishAt</code> terjadwal (WIB dikonversi ke UTC)
+        &mdash; otomatis tayang saat jadwalnya tiba (baris di-skip kalau jadwalnya sudah lewat). Kalau <code class="inline">privacy</code> diisi
+        <code class="inline">public</code> atau <code class="inline">unlisted</code>, video langsung diupload dengan status itu juga saat itu juga
+        (tanpa <code class="inline">publishAt</code>) &mdash; kolom <code class="inline">date</code>/<code class="inline">time</code> tetap wajib
+        diisi format benar, tapi boleh diisi jam yang sudah lewat, tidak akan di-skip.
         Router pindah akun begitu limit/akun tercapai, dan kalau Google menolak karena kuota, <b>semua akun di Client ID yang sama</b> ditandai penuh
         lalu router lompat ke Client ID lain.
       </div>
@@ -282,15 +263,15 @@
     </div>
   </section>
 
-  <!-- SECTION 3: GAMBAR VIDEO 5 DETIK -->
+  <!-- SECTION 3: GAMBAR VIDEO 40 DETIK -->
   <section>
     <div class="sec-head">
-      <div class="sec-head-left"><div class="num-badge">3</div><h2>Gambar Video (5 detik)</h2></div>
+      <div class="sec-head-left"><div class="num-badge">3</div><h2>Gambar Video (40 detik)</h2></div>
       <span class="tag-pill" id="imgModePill">Mode: desain otomatis</span>
     </div>
     <div class="sec-body">
       <div class="note-box" style="margin-bottom:14px;">
-        <b>Mode Video:</b> tiap event di-render jadi <b>video WebM 5 detik</b> dari gambar (1280&times;720); thumbnail otomatis diambil YouTube dari frame video.<br>
+        <b>Mode Video:</b> tiap event di-render jadi <b>video WebM 40 detik</b> dari gambar (1280&times;720); thumbnail otomatis diambil YouTube dari frame video.<br>
         <b>Mode Jadwal Live:</b> gambar yang dipilih dipakai sebagai <b>thumbnail JPEG</b> (dijaga &lt; 2 MB) lewat <code class="inline">thumbnails.set</code>; tidak ada video yang dirender.<br>
         &bull; <b>Tanpa upload gambar:</b> desain otomatis dari judul + jadwal tiap event (beda-beda per event).<br>
         &bull; <b>Upload 1 gambar:</b> gambar itu dipakai sama untuk semua event.<br>
@@ -305,8 +286,8 @@
 
       <div id="imageGallery" style="display:none; flex-wrap:wrap; gap:10px; margin-bottom:12px;"></div>
 
-      <label class="checkbox-lbl" id="overlayWrap" style="display:none;margin-bottom:12px;">
-        <input type="checkbox" id="overlayTitleChk"> Tempel judul event di atas gambar upload
+      <label class="checkbox-lbl" id="overlayWrap" style="display:none;margin-bottom:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:12px;">
+        <input type="checkbox" id="overlayTitleChk" checked> <b>&#9997;&#65039; Tempel judul event di atas gambar upload</b> (judul otomatis ditulis di bawah gambar, sesuai judul tiap event)
       </label>
 
       <div class="preview-assets" id="assetPreview"></div>
@@ -337,29 +318,13 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-primary" id="uploadAllBtn">UPLOAD EVENT KE YOUTUBE</button>
+            <button class="btn-ghost" id="downloadChatIdsBtn" style="display:none;">&#128172; Unduh Chat ID</button>
             <button class="btn-ghost" id="pauseBtn" style="display:none;">&#9208; Jeda</button>
             <button class="btn-ghost" id="stopBtn" style="display:none;color:#ff6b6b;">&#9632; Stop</button>
           </div>
         </div>
 
         <button class="btn-ghost" id="fixThumbsBtn" style="display:none;width:100%;margin-bottom:14px;">Perbaiki Thumbnail Gagal</button>
-
-        <div class="note-box" style="margin-bottom:14px;">
-          <label class="checkbox-lbl" style="margin-bottom:8px;">
-            <input type="checkbox" id="autoCommentChk"> Post komentar otomatis setelah SEMUA event selesai dibuat
-          </label>
-          <div class="field" style="margin-bottom:8px;">
-            <textarea id="autoCommentText" rows="2" placeholder="Teks komentar yang akan diposting ke tiap video/jadwal live yang sukses..."></textarea>
-          </div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">
-            Komentar <b>tidak</b> diposting langsung setelah tiap event dibuat (video/broadcast baru butuh waktu "matang" di YouTube,
-            kalau dipaksa langsung sering gagal <code class="inline">processingFailure</code>). Jadi urutannya: <b>semua event dibuat dulu sampai selesai</b>,
-            lalu tool otomatis mengulang dari event pertama dan memposting komentar satu-satu (dengan jeda + retry otomatis).
-            Khusus <b>mode Jadwal Live</b>: yang dipakai otomatis adalah <b>Live Chat</b> (bukan kolom komentar biasa), karena broadcast yang
-            masih "upcoming" belum punya comment thread biasa &mdash; panel Live Chat-nya yang sudah aktif duluan.
-          </div>
-          <button class="btn-ghost" id="postCommentsBtn" style="width:100%;">Post Komentar Sekarang (manual, untuk event yang sudah Sukses)</button>
-        </div>
 
         <div style="margin-bottom:14px; display:none;" id="progressWrap">
           <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px;">
@@ -414,9 +379,6 @@
   "use strict";
 
   // ================= NAMESPACE PENYIMPANAN (per salinan/repo) =================
-  // localStorage dibagi per ORIGIN, bukan per path. Semua repo di username.github.io satu origin,
-  // jadi tanpa ini semua clone membaca/menimpa kunci yang sama. Di sini semua kunci "yt_csv_*" diberi
-  // awalan nama folder/repo (mis. "repo-a::yt_csv_v4_state"). Di root domain (path "/") kunci tidak berubah.
   var STORAGE_PREFIX = (function(){
     var ns = location.pathname.replace(/[^\/]*$/, "").replace(/^\/+|\/+$/g, "");
     return ns ? ns + "::" : "";
@@ -426,8 +388,6 @@
     var ns = location.pathname.replace(/[^\/]*$/, "").replace(/^\/+|\/+$/g, "");
     var prefix = ns ? ns + "::" : "";
     if (!prefix) return real;
-    // Migrasi satu kali: data lama (tanpa awalan) diklaim oleh SATU salinan yang pertama dibuka, lalu ditandai.
-    // Salinan lain mulai dari kosong. Kunci lama tidak dihapus.
     try {
       var CLAIM = "yt_csv__legacy_claimed_by";
       if (real.getItem(CLAIM) === null){
@@ -451,137 +411,12 @@
     };
   })();
 
-  // ================= BACKEND TOKEN (Google Apps Script) =================
-  var BACKEND_URL = "https://script.google.com/macros/s/AKfycbwWQqMG5eDTxfdmkMgRpyZ9-YBFJpUSUzEYTdjMHMNKIakPjP1b_uWdNUIoE4WXyHQZ/exec";
-  // SHARED_SECRET tidak di-hardcode di sini (lihat SETUP.md "Catatan Keamanan").
-  // Diminta ke user sekali lewat prompt(), lalu disimpan di localStorage.
-  function getBackendSecret(){
-    var KEY = "yt_csv_backend_secret";
-    var v = null;
-    try { v = localStorage.getItem(KEY); } catch (e){}
-    if (!v){
-      v = window.prompt("Masukkan SHARED_SECRET backend Apps Script kamu (sekali saja, akan diingat browser ini):");
-      if (v){ try { localStorage.setItem(KEY, v); } catch (e){} }
-    }
-    return v || "";
-  }
-  // Hapus SHARED_SECRET lama yang tersimpan di browser ini, minta yang baru, lalu tarik ulang daftar akun.
-  // Dipakai kalau kamu ganti SHARED_SECRET di Code.gs (redeploy) supaya tools ikut sinkron tanpa buka console.
-  function resetBackendSecret(){
-    try { localStorage.removeItem("yt_csv_backend_secret"); } catch (e){}
-    var v = window.prompt("Masukkan SHARED_SECRET backend yang BARU (dari Code.gs):");
-    if (!v){ showToast("Dibatalkan, secret lama tetap dipakai kalau masih ada"); return; }
-    try { localStorage.setItem("yt_csv_backend_secret", v); } catch (e){}
-    showToast("Secret diganti, menyinkronkan ulang akun...");
-    log("SHARED_SECRET backend diganti manual lewat tombol 'Ganti Secret'.", "info");
-    refreshAccountsFromBackend();
-  }
-  function backendCall(action, extra){
-    var body = Object.assign({ action: action, secret: getBackendSecret() }, extra || {});
-    return fetch(BACKEND_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // hindari CORS preflight Apps Script
-      body: JSON.stringify(body)
-    }).then(function (r){ return r.json(); });
-  }
-  function backendListAccounts(){ return backendCall("listAccounts"); }
-  function backendGetToken(accountId){ return backendCall("getToken", { accountId: accountId }); }
-  function backendRemoveAccount(accountId){ return backendCall("removeAccount", { accountId: accountId }); }
-
-  // Setiap kali sebelum panggil createLiveEvent/uploadOneEvent/setThumbnailWithRetry dll,
-  // minta token FRESH ke backend (akun lama yang masih pakai GIS tidak berubah).
-  function ensureFreshToken(acc){
-    if (acc.clientId !== "backend") return Promise.resolve(acc.token);
-    return backendGetToken(acc.backendAccountId).then(function (res){
-      if (res.error){
-        log("Gagal ambil token untuk " + (acc.email || acc.channelTitle) + ": " + (res.message || res.error), "error");
-        if (res.error === "refresh_failed") acc.needsRelogin = true;
-        throw new Error(res.message || res.error);
-      }
-      acc.needsRelogin = false;
-      return res.access_token;
-    });
-  }
-  // Buka tab baru ke backend ?action=login -- OAuth server-side, refresh_token tersimpan
-  // di Apps Script, tidak pernah balik ke browser. Setelah tab ditutup, refresh daftar akun.
-  // Di HP, window.open/tab-closed detection sering tidak reliable (user pencet back, bukan close tab,
-  // atau browser mobile tidak melaporkan win.closed dengan benar) -> makanya juga dengar event
-  // "kembali ke tab ini" (visibilitychange/focus) sebagai sinyal cadangan, plus tombol "Sinkron Akun" manual.
-  function doAddAccountViaBackend(){
-    var loginUrl = BACKEND_URL + "?action=login";
-    var win = window.open(loginUrl, "_blank");
-    showToast("Login di tab baru, lalu kembali sini");
-    log("Login akun baru dibuka di tab baru (backend Apps Script). Setelah selesai, akun otomatis muncul di daftar " +
-        "(kalau tidak muncul otomatis, klik 'Sinkron Akun').", "info");
-    var pollCount = 0;
-    var done = false;
-    var finish = function (){
-      if (done) return;
-      done = true;
-      clearInterval(iv);
-      document.removeEventListener("visibilitychange", onBack);
-      window.removeEventListener("focus", onBack);
-      refreshAccountsFromBackend();
-    };
-    var iv = setInterval(function (){
-      pollCount++;
-      if (win && win.closed){ finish(); return; }
-      if (pollCount > 200) finish(); // stop setelah ~10 menit, tetap coba sinkron sekali
-    }, 3000);
-    // Cadangan: begitu tab/app ini aktif lagi (user balik dari tab login, apapun caranya), coba sinkron.
-    var onBack = function (){
-      if (document.visibilityState && document.visibilityState !== "visible") return;
-      finish();
-    };
-    document.addEventListener("visibilitychange", onBack);
-    window.addEventListener("focus", onBack);
-  }
-  function syncAccountsBtnClick(){
-    showToast("Menyinkronkan akun...");
-    refreshAccountsFromBackend();
-  }
-  // Sinkronkan accounts[] lokal dengan daftar akun di backend.
-  function refreshAccountsFromBackend(){
-    return backendListAccounts().then(function (res){
-      if (res.error){
-        if (res.error === "unauthorized"){
-          // Ini penyebab paling umum dari "sukses ditambahkan tapi tidak muncul di tools":
-          // SHARED_SECRET di Code.gs sudah diganti/redeploy, tapi browser ini masih pakai secret LAMA
-          // yang tersimpan di localStorage -> backend selalu menolak listAccounts/getToken.
-          log("Gagal ambil daftar akun dari backend: SECRET SALAH/TIDAK COCOK (unauthorized). Kalau kamu baru ganti SHARED_SECRET di Code.gs, klik tombol 'Ganti Secret' dan masukkan secret yang BARU.", "error");
-          showToast("Secret backend tidak cocok — klik 'Ganti Secret'");
-        } else {
-          log("Gagal ambil daftar akun dari backend: " + res.error, "error");
-        }
-        return;
-      }
-      var byId = {}; accounts.forEach(function (a){ if (a.backendAccountId) byId[a.backendAccountId] = a; });
-      res.forEach(function (r){
-        if (byId[r.accountId]){
-          byId[r.accountId].email = r.email; byId[r.accountId].name = r.name; byId[r.accountId].channelTitle = r.channelTitle;
-        } else {
-          accounts.push({
-            id: genId(),
-            backendAccountId: r.accountId,   // dipakai untuk minta token, BUKAN accounts.id lokal
-            clientId: "backend",             // penanda: akun ini dikelola backend, bukan GIS
-            email: r.email, name: r.name, channelTitle: r.channelTitle,
-            usedCount: 0, usedDay: pacificDateKey()
-          });
-        }
-      });
-      persistAccounts();
-      updateGeneralUi();
-      log(res.length + " akun tersinkron dari backend.", "success");
-    }).catch(function (e){ log("Gagal terhubung ke backend: " + e, "error"); });
-  }
-
   // ================= KONSTANTA & STATE =================
   var CSV_TEMPLATE = 'title,date,time,description,privacy,tags\n' +
     '"Ngoding Malam",2026-09-20,20:00,"Ngoding santai bareng subscriber",public,"ngoding"\n' +
     '"Podcast Bisnis",2026-09-21,19:30,"Bahas strategi bisnis online",unlisted,"bisnis,podcast"\n' +
     '"QnA Subscriber",2026-09-22,20:00,"Jawab pertanyaan subscriber",private,"qna"\n';
 
-  // ---- daftar Client ID (multi). Migrasi otomatis dari penyimpanan lama yang cuma satu Client ID.
   var clientIds = (function(){
     var list = [];
     try { var raw = localStorage.getItem("yt_csv_client_ids"); if (raw) list = JSON.parse(raw); } catch (e){ list = []; }
@@ -590,14 +425,12 @@
     if (legacy && list.indexOf(legacy) === -1) list.unshift(legacy);
     return list.filter(function(x){ return typeof x === "string" && x; });
   })();
-  var tokenClients = {};   // { clientId: google token client } satu per Client ID
-  // ---- state login ulang (dideklarasikan di atas supaya callback GSI yang cepat pun aman) ----
-  var pendingRelogin = null;       // { acc, clientId, email }  akun yang sedang diminta login ulang
-  var pendingNextRelogin = null;   // akun berikutnya di antrean, menunggu klik pengguna
-  var reloginQueue = [];           // antrean akun untuk "Login ulang yang habis"
+  var tokenClients = {};
+  var pendingRelogin = null;
+  var pendingNextRelogin = null;
+  var reloginQueue = [];
   var reloginTotal = 0;
-  var clientId = clientIds.length ? clientIds[0] : "";   // dipertahankan agar kode lama (pill, tombol) tetap jalan
-  // Selesaikan migrasi: kalau masih ada format lama, tulis ke format baru sekarang juga.
+  var clientId = clientIds.length ? clientIds[0] : "";
   (function finishMigration(){
     try {
       if (localStorage.getItem("yt_csv_client_id") && clientIds.length){
@@ -608,30 +441,17 @@
   })();
   var gsiReady = false;
 
-  // Daftar akun multi-login. Tiap item: { id, token, email, name, picture, channelTitle, usedCount }
-  // "usedCount" = berapa event yang sudah sukses diupload lewat akun ini pada sesi bulk-upload berjalan.
   var accounts = [];
-  var activeAccountIndex = 0;   // index akun yang lagi dipakai router sekarang
-  var limitPerAccount = 6;      // nilai sementara, dikoreksi ke kuota per-mode setelah appMode diketahui (lihat bawah)
-  var limitAutoManaged = true;  // true = "Limit/akun" masih ikut kuota per-mode otomatis; jadi false begitu user ketik manual
+  var activeAccountIndex = 0;
+  var limitPerAccount = 6;
+  var limitAutoManaged = true;
 
-  var events = [];          // hasil parse CSV/Excel
-  var selectedIds = {};     // map _id -> true
+  var events = [];
+  var selectedIds = {};
 
-  // ---- MODE: "video" (videos.insert) atau "live" (liveBroadcasts.insert) ----
-  // Biaya per event menurut https://developers.google.com/youtube/v3/determine_quota_cost (diperbarui 15 Sep 2026):
-  //   video : videos.insert = 1 unit dari bucket SENDIRI 100/hari (tidak memakai 10.000 unit)
-  //   live  : liveBroadcasts.insert 50 + thumbnails.set 50 + videos.update (tag) 50 = 150 unit dari 10.000 unit bersama
   var COST = { live: { insert: 50, thumb: 50, tags: 50 }, DAILY_UNITS: 10000, VIDEO_BUCKET: 100 };
-  // videos.update MENIMPA seluruh snippet dan mewajibkan categoryId. Agar kategori tidak berubah diam-diam, nilai yang SAMA
-  // dikirim saat membuat broadcast (snippet.categoryId boleh diisi di liveBroadcasts.insert) dan saat update tag.
-  var LIVE_CATEGORY_ID = "22";   // 22 = People & Blogs
+  var LIVE_CATEGORY_ID = "22";
 
-  // ================= ESTIMASI KUOTA PER CLIENT ID =================
-  // Google TIDAK punya endpoint buat nanya sisa kuota hari ini -> ini cuma HITUNGAN LOKAL dari apa yang tool ini
-  // sendiri sudah kirim (tidak tahu kalau Client ID yang sama dipakai script/tool lain di luar sini).
-  // Kuota live (10.000 unit bersama) & kuota video (bucket terpisah 100/hari) dilacak TERPISAH per Client ID,
-  // dan direset mengikuti tanggal Pacific Time (bukan WIB) karena itu waktu reset asli dari Google.
   var LS_CLIENT_QUOTA = "yt_csv_client_quota";
   function pacificDateKey(d){
     try { return (d || new Date()).toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); }
@@ -641,7 +461,7 @@
     try { var raw = localStorage.getItem(LS_CLIENT_QUOTA); var o = raw ? JSON.parse(raw) : {}; return (o && typeof o === "object") ? o : {}; }
     catch (e){ return {}; }
   }
-  var clientQuota = loadClientQuota();   // { [clientId]: { day: "YYYY-MM-DD" (PT), liveUnits: 0, videoSlots: 0 } }
+  var clientQuota = loadClientQuota();
   function persistClientQuota(){ try { localStorage.setItem(LS_CLIENT_QUOTA, JSON.stringify(clientQuota)); } catch (e){} }
   function getClientQuota(cid){
     var today = pacificDateKey();
@@ -654,27 +474,22 @@
     if (mode === "live") q.liveUnits += (unitsUsed || 0); else q.videoSlots += 1;
     persistClientQuota();
   }
-  var LIVE_EVENT_COST = COST.live.insert + COST.live.thumb + COST.live.tags;   // 150
+  var LIVE_EVENT_COST = COST.live.insert + COST.live.thumb + COST.live.tags;
   function eventsPerDayPerClient(mode){
-    return mode === "live" ? Math.floor(COST.DAILY_UNITS / LIVE_EVENT_COST) : COST.VIDEO_BUCKET;   // 66 vs 100
+    return mode === "live" ? Math.floor(COST.DAILY_UNITS / LIVE_EVENT_COST) : COST.VIDEO_BUCKET;
   }
   var LS_MODE = "yt_csv_mode";
   var appMode = (function(){ try { var m = localStorage.getItem("yt_csv_mode"); return m === "live" ? "live" : "video"; } catch (e){ return "video"; } })();
-  // Default "Limit/akun" mengikuti kuota harian per Client ID sesuai mode: 66 (live) / 100 (video).
-  // saveState/restoreState di bawah bisa menimpa ini kalau ada sesi tersimpan (dan mematikan limitAutoManaged).
   limitPerAccount = eventsPerDayPerClient(appMode);
-  var VIDEO_SECONDS = 5;
+  var VIDEO_SECONDS = 40;
   var VIDEO_W = 1280, VIDEO_H = 720;
-  // Galeri gambar upload user. Array kosong = mode desain otomatis.
-  // Tiap item: { img: HTMLImageElement, url: object URL, name: nama file }
-  // >1 gambar dibagi bergilir (round-robin) per event berdasarkan posisi event di daftar.
   var userImages = [];
-  var renderingVideo = false;  // true selama satu video sedang di-render
+  var renderingVideo = false;
 
   var running = false;
-  var paused = false;          // true = loop berhenti sejenak SETELAH event yang sedang berjalan selesai, state disimpan
-  var stopRequested = false;   // true = loop dihentikan penuh SETELAH event yang sedang berjalan selesai
-  var pausedResumeFn = null;   // fungsi untuk melanjutkan loop setelah jeda dilepas
+  var paused = false;
+  var stopRequested = false;
+  var pausedResumeFn = null;
 
   // ================= ELEMEN DOM =================
   var el = {
@@ -686,8 +501,6 @@
     modeLiveBtn: document.getElementById("modeLiveBtn"),
     modeNote: document.getElementById("modeNote"),
     addAccountBtn: document.getElementById("addAccountBtn"),
-    syncAccountsBtn: document.getElementById("syncAccountsBtn"),
-    resetBackendSecretBtn: document.getElementById("resetBackendSecretBtn"),
     limitPerAccountInput: document.getElementById("limitPerAccountInput"),
     accountsList: document.getElementById("accountsList"),
     pillGsi: document.getElementById("pillGsi"),
@@ -717,6 +530,7 @@
     selectAllChk: document.getElementById("selectAllChk"),
     selectedCountLabel: document.getElementById("selectedCountLabel"),
     uploadAllBtn: document.getElementById("uploadAllBtn"),
+    downloadChatIdsBtn: document.getElementById("downloadChatIdsBtn"),
     pauseBtn: document.getElementById("pauseBtn"),
     stopBtn: document.getElementById("stopBtn"),
     progressWrap: document.getElementById("progressWrap"),
@@ -727,9 +541,6 @@
     clearLogBtn: document.getElementById("clearLogBtn"),
     downloadLogBtn: document.getElementById("downloadLogBtn"),
     fixThumbsBtn: document.getElementById("fixThumbsBtn"),
-    autoCommentChk: document.getElementById("autoCommentChk"),
-    autoCommentText: document.getElementById("autoCommentText"),
-    postCommentsBtn: document.getElementById("postCommentsBtn"),
     restoreBanner: document.getElementById("restoreBanner"),
 
     downloadTemplateBtn: document.getElementById("downloadTemplateBtn"),
@@ -785,7 +596,7 @@
         'Biaya per event <b>150 unit</b> (jadwal 50 + thumbnail 50 + tag 50) &asymp; <b>' + eventsPerDayPerClient("live") + ' event/hari per Client ID</b>. ' +
         '<b>Syarat:</b> live streaming harus <b>aktif</b> di channel (verifikasi telepon, aktivasi pertama bisa sampai 24 jam) dan channel harus terverifikasi untuk thumbnail. ' +
         'Jadwal harus di masa depan dan &ldquo;cukup dekat&rdquo; (batas Google tidak dipublikasikan, kalau ditolak coba tanggal lebih dekat). Render video tidak dipakai.'
-      : '<b>Mode Upload Video.</b> Tiap event di-render jadi video WebM 5 detik lalu diupload. Kuota: <b>' + eventsPerDayPerClient("video") + ' upload/hari per Client ID</b> (bucket sendiri, 1 unit/upload). ' +
+      : '<b>Mode Upload Video.</b> Tiap event di-render jadi video WebM 40 detik lalu diupload. Kuota: <b>' + eventsPerDayPerClient("video") + ' upload/hari per Client ID</b> (bucket sendiri, 1 unit/upload). ' +
         'Tidak butuh live streaming aktif dan tidak butuh thumbnail terpisah.';
     var pill = document.getElementById("imgModePill");
     if (pill) pill.textContent = (userImages.length ? "Mode: gambar upload (" + userImages.length + ")" : "Mode: desain otomatis") + (live ? " (thumbnail)" : " (video)");
@@ -796,14 +607,12 @@
     if (m === appMode) return;
     appMode = m;
     lsSetRaw(LS_MODE, m);
-    // status lama milik mode sebelumnya tidak relevan lagi: baris yang belum sukses dikembalikan ke ready
     events.forEach(function(r){ if (r.status === "gagal" || r.status === "skip") { r.status = "ready"; r.message = ""; } });
     log("Mode diganti ke: " + (m === "live" ? "Jadwal Live" : "Upload Video") + ".", "info");
-    // Kalau "Limit/Client ID" belum pernah diubah manual, ikutkan ke kuota harian per Client ID mode baru (66 live / 100 video).
     if (limitAutoManaged){
       limitPerAccount = eventsPerDayPerClient(m);
       el.limitPerAccountInput.value = limitPerAccount;
-      log("Limit/Client ID otomatis disesuaikan ke " + limitPerAccount + " (kuota " + (m === "live" ? "jadwal live" : "upload video") + " per Client ID/hari).", "info");
+      log("Limit/akun otomatis disesuaikan ke " + limitPerAccount + " (kuota " + (m === "live" ? "jadwal live" : "upload video") + " per Client ID/hari).", "info");
       saveState();
     }
     applyModeUi();
@@ -820,25 +629,14 @@
   }
   function persistClientIds(){
     lsSetRaw("yt_csv_client_ids", JSON.stringify(clientIds));
-    try { localStorage.removeItem("yt_csv_client_id"); } catch (e){}   // format lama sudah dimigrasi
+    try { localStorage.removeItem("yt_csv_client_id"); } catch (e){}
   }
   function lsSetRaw(key, val){ try { localStorage.setItem(key, val); } catch (e){} }
   function accountsOfClient(cid){ return accounts.filter(function(a){ return a.clientId === cid; }); }
-  // Kuota harian (limitPerAccount, 66 live / 100 video) itu milik Client ID, DIBAGI BERSAMA semua akun
-  // yang login pakai Client ID yang sama -- bukan jatah masing-masing akun. Jadi "terpakai" yang benar
-  // untuk dibandingkan ke limitPerAccount adalah total usedCount seluruh akun se-Client ID, bukan usedCount
-  // akun itu sendiri. acc.usedCount tetap disimpan per akun (buat histori "akun ini upload event apa saja").
-  function usedCountForClient(cid){
-    return accountsOfClient(cid).reduce(function(sum, a){ return sum + (a.usedCount || 0); }, 0);
-  }
 
   // ================= UMUR TOKEN =================
-  // Token akses Google berlaku ~60 menit. Dianggap habis di menit ke-55 supaya ada jeda aman sebelum ditolak (401).
-  // Umur token DIBACA dari TokenResponse.expires_in ("lifetime in seconds of the access token" - dokumentasi Google Identity Services).
-  // TOKEN_LIFE_MS hanya cadangan kalau expires_in tidak ada (Google umumnya memberi 3600 detik).
   var TOKEN_LIFE_MS = 55 * 60 * 1000;
-  var TOKEN_WARN_MS = 10 * 60 * 1000;    // sisa <10 menit = "hampir habis"
-  // Umur pakai = expires_in dikurangi jeda aman (5 menit, atau 10% kalau umurnya pendek) supaya token tidak mati di tengah request.
+  var TOKEN_WARN_MS = 10 * 60 * 1000;
   function tokenLifeFromResponse(resp){
     var sec = resp && Number(resp.expires_in);
     if (!isFinite(sec) || sec <= 0) return TOKEN_LIFE_MS;
@@ -847,7 +645,7 @@
   }
   function tokenRemainingMs(acc){
     if (acc.expired) return 0;
-    if (!acc.loginAt) return TOKEN_LIFE_MS;   // tidak diketahui -> anggap segar (akan dikoreksi kalau 401)
+    if (!acc.loginAt) return TOKEN_LIFE_MS;
     return Math.max(0, acc.loginAt + (acc.tokenLifeMs || TOKEN_LIFE_MS) - Date.now());
   }
   function isTokenExpired(acc){ return acc.expired || tokenRemainingMs(acc) <= 0; }
@@ -855,35 +653,26 @@
     var m = Math.ceil(ms / 60000);
     return m >= 1 ? m + " mnt" : "<1 mnt";
   }
-  // Tandai akun yang tokennya sudah lewat umur, lalu kembalikan jumlahnya.
   function refreshTokenStates(){
     var n = 0;
     accounts.forEach(function(a){ if (!a.expired && tokenRemainingMs(a) <= 0){ a.expired = true; n++; } });
     return n;
   }
 
-  // ================= PERPANJANG TOKEN OTOMATIS (SILENT REFRESH) =================
-  // GSI token client (implicit flow) tidak pernah memberi refresh_token ke sisi browser, jadi
-  // "perpanjangan otomatis" di sini artinya: minta token baru dengan prompt:"" (tanpa popup consent).
-  // Ini cuma berhasil DIAM-DIAM kalau sesi Google user masih aktif & browser tidak memblokir permintaan
-  // itu (mis. third-party storage/iframe Google diblokir). Kalau gagal, dibiarkan senyap dan akun
-  // tetap jatuh ke alur lama: warning "hampir habis" -> tombol "Login ulang" manual.
-  var SILENT_REFRESH_MARGIN_MS = TOKEN_WARN_MS;   // mulai dicoba saat sisa token <=10 menit
-  var SILENT_REFRESH_RETRY_MS = 4 * 60 * 1000;    // kalau gagal, coba lagi akun yg sama tiap >=4 menit (jangan spam)
-  var pendingSilentRefresh = null;   // akun yang sedang dicoba diperpanjang diam-diam sekarang
-  var silentRefreshQueue = [];       // akun lain yang antre dicoba setelah yang di atas selesai
-  var silentRefreshLastTry = {};     // acc.id -> timestamp percobaan terakhir
-  var SILENT_REFRESH_TIMEOUT_MS = 45 * 1000;   // popup tidak merespons selama ini -> anggap gagal (jangan macet selamanya)
-  var SILENT_REFRESH_MAX_FAILS = 2;            // setelah 2x gagal berturut-turut untuk akun yang sama, berhenti otomatis
-  var MANUAL_LOGIN_GUARD_MS = 2 * 60 * 1000;   // selama user login manual, jangan mulai perpanjangan otomatis
-  var silentRefreshFails = {};                 // acc.id -> jumlah gagal berturut-turut
-  var silentRefreshDisabled = false;           // true kalau browser memblokir popup yang tidak dipicu klik
+  // ================= PERPANJANG TOKEN OTOMATIS =================
+  var SILENT_REFRESH_MARGIN_MS = TOKEN_WARN_MS;
+  var SILENT_REFRESH_RETRY_MS = 4 * 60 * 1000;
+  var pendingSilentRefresh = null;
+  var silentRefreshQueue = [];
+  var silentRefreshLastTry = {};
+  var SILENT_REFRESH_TIMEOUT_MS = 45 * 1000;
+  var SILENT_REFRESH_MAX_FAILS = 2;
+  var MANUAL_LOGIN_GUARD_MS = 2 * 60 * 1000;
+  var silentRefreshFails = {};
+  var silentRefreshDisabled = false;
   var silentRefreshTimer = null;
   var manualLoginUntil = 0;
 
-  // Cari akun yang tokennya mepet/habis dan belum dicoba baru-baru ini, lalu mulai antrean percobaan.
-  // Batalkan perpanjangan otomatis yang sedang tertunda. Dipanggil saat user memulai login MANUAL, supaya token hasil
-  // popup manual tidak salah rute ke penanganan perpanjangan otomatis (callback GIS dibagi per Client ID, bukan per permintaan).
   function abandonSilentRefresh(reason){
     if (!pendingSilentRefresh && !silentRefreshQueue.length) return;
     clearTimeout(silentRefreshTimer); silentRefreshTimer = null;
@@ -897,9 +686,9 @@
 
   function maybeStartSilentRefreshes(){
     if (silentRefreshDisabled) return;
-    if (pendingRelogin || pendingSilentRefresh || pendingNextRelogin) return;   // jangan tabrakan dgn proses login lain
+    if (pendingRelogin || pendingSilentRefresh || pendingNextRelogin) return;
     var now = Date.now();
-    if (now < manualLoginUntil) return;                                        // user sedang/baru login manual
+    if (now < manualLoginUntil) return;
     var candidates = accounts.filter(function(a){
       if ((silentRefreshFails[a.id] || 0) >= SILENT_REFRESH_MAX_FAILS) return false;
       var rem = tokenRemainingMs(a);
@@ -926,8 +715,6 @@
         finishSilentRefresh(false, "timeout");
       }
     }, SILENT_REFRESH_TIMEOUT_MS);
-    // Catatan: token client GIS hanya mendukung dialog/popup (bukan iframe tersembunyi), jadi "diam-diam" berarti popup
-    // singkat tanpa layar pilih akun. Kalau browser menolak popup yang tidak dipicu klik, kita berhenti (lihat finishSilentRefresh).
     log("Mencoba perpanjang token otomatis untuk " + (acc.email || acc.channelTitle || "akun") + "...", "info");
     try { tc.requestAccessToken({ prompt: "", login_hint: acc.email || undefined }); }
     catch (e){ log("Gagal memulai perpanjangan otomatis: " + e, "info"); finishSilentRefresh(false, "exception"); }
@@ -940,7 +727,6 @@
       .then(function(r){ if (!r.ok) throw new Error("userinfo gagal (" + r.status + ")"); return r.json(); })
       .then(function(d){
         if (acc.email && d.email && d.email.toLowerCase() !== acc.email.toLowerCase()){
-          // Jarang terjadi (mis. beberapa sesi Google aktif): token ini untuk akun lain, jangan ditimpa.
           log("Perpanjangan otomatis diabaikan: token yang didapat untuk akun lain (" + d.email + "), bukan " + acc.email + ".", "info");
           finishSilentRefresh(false, "akun-lain");
           return;
@@ -968,8 +754,6 @@
     }
     if (!success){
       if (why === "popup_failed_to_open"){
-        // Browser menolak popup yang tidak dipicu klik: percobaan otomatis berikutnya pasti gagal juga. Matikan untuk sesi ini
-        // (tanpa ini, tiap akun dicoba tiap 4 menit selamanya dan log 300 baris terisi sampah).
         silentRefreshDisabled = true; silentRefreshQueue = [];
         log("Perpanjangan otomatis dimatikan untuk sesi ini: browser memblokir popup yang tidak dipicu klik (wajar). Pakai tombol 'Login ulang' saat token habis.", "info");
       } else if (acc && silentRefreshFails[acc.id] >= SILENT_REFRESH_MAX_FAILS){
@@ -987,13 +771,11 @@
   }
 
   // ================= AUTO SAVE (localStorage) =================
-  // Yang disimpan: log, daftar event + status, progress bulk, limit/akun, DAFTAR akun (email/channel/clientId saja).
-  // TIDAK disimpan: token akses Google (sengaja, demi keamanan) -> setelah refresh, akun tetap ada di list tapi perlu "Login ulang" (bukan Tambah Akun dari nol).
   var LS_LOG = "yt_csv_v4_log";
   var LS_STATE = "yt_csv_v4_state";
   var LOG_MAX = 300;
-  var logBuffer = [];          // [{t, type, text}]
-  var lastRun = null;          // ringkasan bulk upload terakhir
+  var logBuffer = [];
+  var lastRun = null;
   var lsWarned = false;
 
   function lsSet(key, val){
@@ -1006,7 +788,6 @@
   function saveLog(){ lsSet(LS_LOG, JSON.stringify(logBuffer)); }
   var saveStateTimer = null;
   function saveState(){
-    // ditunda 250ms supaya beberapa perubahan beruntun cuma menulis sekali
     clearTimeout(saveStateTimer);
     saveStateTimer = setTimeout(saveStateNow, 250);
   }
@@ -1030,8 +811,6 @@
   function fmtTime(ts){ return new Date(ts).toLocaleTimeString("id-ID"); }
   function fmtDateTime(ts){ return new Date(ts).toLocaleString("id-ID"); }
 
-  // WIB -> UTC ISO string. null kalau invalid.
-  // tz opsional (mis. "-05:00"); kosong = WIB (+07:00)
   function wibToUtcIso(date, time, tz){
     try {
       var iso = date + "T" + time + ":00" + (tz || "+07:00");
@@ -1040,15 +819,13 @@
       return d.toISOString();
     } catch (e) { return null; }
   }
-  // Jadwal sebuah baris -> UTC ISO, memakai zona waktu asli baris (format tanpa header) atau WIB (format lama).
   function rowUtcIso(row){ return wibToUtcIso(row.date, row.time, row._tz); }
   function timeLabel(row){ return row._tzLabel || "WIB"; }
   function isPastUtc(isoUtc){
     return new Date(isoUtc).getTime() <= Date.now();
   }
 
-  // ================= CSV PARSING (manual, TIDAK PERNAH pakai SheetJS untuk .csv) =================
-  // Parser CSV state-machine: mendukung koma & newline di dalam field bertanda kutip, dan BOM UTF-8.
+  // ================= CSV PARSING =================
   function parseCsvRecords(text){
     text = String(text).replace(/^\uFEFF/, "");
     var records = [], row = [], cur = "", inQuotes = false;
@@ -1090,14 +867,11 @@
   }
 
   // ================= FORMAT BARU TANPA HEADER =================
-  // Tiap baris = 1 event. Kolom pertama = judul. Kolom berlabel "Date:" dan "Time:" = jadwal (zona waktu bebas, mis. CDT/PDT),
-  // dibaca APA ADANYA (tanggal & jam tidak diubah), zona waktunya disimpan di baris (_tz/_tzLabel) untuk konversi ke UTC saat kirim ke YouTube.
-  // Kolom berawalan "#" = hashtag (masuk deskripsi + tags). Kolom lain yang terisi = deskripsi (urut sesuai kolom).
   var TZ_FIXED = {
     UTC: 0, GMT: 0, Z: 0, WIB: 7, WITA: 8, WIT: 9,
     EST: -5, EDT: -4, CST: -6, CDT: -5, MST: -7, MDT: -6, PST: -8, PDT: -7, AKST: -9, AKDT: -8, HST: -10
   };
-  var TZ_US_GENERIC = { ET: [-5, -4], CT: [-6, -5], MT: [-7, -6], PT: [-8, -7] };   // [standar, DST]
+  var TZ_US_GENERIC = { ET: [-5, -4], CT: [-6, -5], MT: [-7, -6], PT: [-8, -7] };
   var MONTHS = { jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, oct:10, nov:11, dec:12 };
 
   function usDstOn(y, m, d){
@@ -1115,14 +889,12 @@
     return null;
   }
   function cellLabelValue(cell, label){
-    // "🗓️ Date: Saturday, Sep 19, 2026" -> "Saturday, Sep 19, 2026"; label hanya dikenali di awal sel (setelah emoji/spasi)
     var re = new RegExp("^[^A-Za-z0-9#]*" + label + "\\s*:\\s*(.*)$", "i");
     var m = String(cell).match(re);
     return m ? m[1].trim() : null;
   }
   function pad2(n){ return (n < 10 ? "0" : "") + n; }
 
-  // Kembalikan { date:"YYYY-MM-DD", time:"HH:mm" (24 jam, sesuai file), tz:"-05:00", label:"CDT" }, atau { error:"..." }
   function parseSchedule(dateText, timeText){
     var dm = String(dateText || "").match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4})/i);
     var Y, M, D;
@@ -1164,7 +936,6 @@
     return !(cells || []).some(function(c){ return String(c).trim() !== ""; });
   }
 
-  // arrays = array of array (sel per baris). Hasil: { rows:[...objek standar...], problems:[...] }
   function parseHeaderlessRows(arrays){
     var rows = [], problems = [];
     var privacy = (el.newFormatPrivacy && el.newFormatPrivacy.value) || "public";
@@ -1176,7 +947,7 @@
       var dateText = null, timeText = null, hashtags = [], descLines = [];
       vals.forEach(function(v, ci){
         if (!v || ci === 0) return;
-        if (v === title) return;                        // kolom judul yang diulang
+        if (v === title) return;
         var d = cellLabelValue(v, "Date");
         var t = cellLabelValue(v, "Time");
         if (d !== null && dateText === null){ dateText = d; descLines.push(v); return; }
@@ -1221,7 +992,6 @@
     document.head.appendChild(s);
   }
 
-  // Jaga-jaga kalau Excel masih mengirim tanggal/jam sebagai angka serial atau objek Date.
   function normalizeExcelCell(key, val){
     var k = String(key).toLowerCase();
     function pad(n){ return (n < 10 ? "0" : "") + n; }
@@ -1252,8 +1022,6 @@
       return;
     }
     if (ext === "csv"){
-      // .csv SELALU pakai parser manual di atas, TIDAK PERNAH lewat SheetJS,
-      // supaya kolom tanggal (2026-09-25) tidak "ditebak" jadi serial number Excel (misal 46290.29).
       var reader = new FileReader();
       reader.onload = function(e){
         var records = parseCsvRecords(e.target.result);
@@ -1354,7 +1122,7 @@
     events = parsed;
     lastRun = null;
     selectedIds = {};
-    events.forEach(function(r){ selectedIds[r._id] = !r._invalid; }); // baris invalid tidak ikut terpilih otomatis
+    events.forEach(function(r){ selectedIds[r._id] = !r._invalid; });
 
     renderWarnings(problems);
     renderPreviewTable();
@@ -1408,7 +1176,6 @@
 
   // ================= RENDER TABEL EVENT (SECTION 4) =================
   function rowsNeedingThumbFix(){
-    // Baris sukses dibuat sebagai jadwal live, tapi thumbnail-nya gagal ke-set (429/403/kuota/dll) -> masih pakai thumbnail default YouTube.
     return events.filter(function(r){
       return r.mode === "live" && r.status === "sukses" && r.videoId && r.message && /thumbnail/i.test(r.message);
     });
@@ -1419,9 +1186,19 @@
     el.fixThumbsBtn.textContent = "Perbaiki Thumbnail Gagal (" + n + ")";
   }
 
+  function updateChatIdsBtnVisibility(){
+    var hasChatIds = events.some(function(r){ return r.liveChatId && r.videoId; });
+    el.downloadChatIdsBtn.style.display = (hasChatIds && appMode === "live") ? "inline-block" : "none";
+    if (hasChatIds && appMode === "live"){
+      var n = events.filter(function(r){ return r.liveChatId && r.videoId; }).length;
+      el.downloadChatIdsBtn.textContent = "\uD83D\uDCAC Unduh Chat ID (" + n + ")";
+    }
+  }
+
   function renderEventsTable(){
     saveState();
     updateFixThumbsBtn();
+    updateChatIdsBtnVisibility();
     if (events.length === 0){
       el.emptyState.style.display = "block";
       el.eventsArea.style.display = "none";
@@ -1447,7 +1224,7 @@
       if (r.status === "ready") statusHtml = '<span class="status-tag ready">Ready</span>';
       else if (r.status === "loading") statusHtml = '<span class="status-tag loading">Proses</span>';
       else if (r.status === "skip") statusHtml = '<span class="status-tag skip">Skip (lewat)</span>';
-      else if (r.status === "sukses") statusHtml = '<div><span class="status-tag sukses">Sukses</span>' + (r.videoId ? '<div class="mono" style="font-size:10px;color:var(--muted);margin-top:3px;">' + escapeHtml(r.videoId) + '</div>' : '') + (r.mode === "live" ? '<div style="font-size:10px;color:#93c5fd;margin-top:2px;">jadwal live' + (r.message && /tapi:/.test(r.message) ? ' (<span style="color:#fbbf24;">' + escapeHtml(r.message.replace("Jadwal live dibuat, tapi: ", "")) + '</span>)' : '') + '</div>' : '') + (r.uploadedVia ? '<div style="font-size:10px;color:var(--muted);margin-top:2px;">via ' + escapeHtml(r.uploadedVia) + '</div>' : '') + '</div>';
+      else if (r.status === "sukses") statusHtml = '<div><span class="status-tag sukses">Sukses</span>' + (r.videoId ? '<div class="mono" style="font-size:10px;color:var(--muted);margin-top:3px;">' + escapeHtml(r.videoId) + '</div>' : '') + (r.mode === "live" ? '<div style="font-size:10px;color:#93c5fd;margin-top:2px;">jadwal live' + (r.message && /tapi:/.test(r.message) ? ' (<span style="color:#fbbf24;">' + escapeHtml(r.message.replace("Jadwal live dibuat, tapi: ", "")) + '</span>)' : '') + '</div>' : '') + (r.liveChatId ? '<div style="font-size:10px;color:#86efac;margin-top:2px;">&#128172; chat ID tersimpan</div>' : '') + (r.uploadedVia ? '<div style="font-size:10px;color:var(--muted);margin-top:2px;">via ' + escapeHtml(r.uploadedVia) + '</div>' : '') + '</div>';
       else if (r.status === "gagal") statusHtml = '<div><span class="status-tag gagal">Gagal</span><div style="font-size:10px;color:#fca5a5;max-width:180px;margin-top:3px;">' + escapeHtml(r.message || "") + '</div></div>';
 
       rowsHtml += '<tr>' +
@@ -1467,7 +1244,6 @@
     });
     el.eventsTableBody.innerHTML = rowsHtml;
 
-    // attach checkbox listeners
     Array.prototype.forEach.call(document.querySelectorAll(".row-chk"), function(chk){
       chk.addEventListener("change", function(){
         selectedIds[this.getAttribute("data-id")] = this.checked;
@@ -1482,9 +1258,7 @@
     updateUploadBtnState();
   }
 
-  // ---- Jaga layar tetap menyala + timer yang tidak ikut dilambatkan browser saat tab di latar belakang ----
-  // Browser HP menahan/menghentikan tab yang tidak terlihat. Wake Lock menjaga layar tetap nyala selama proses jalan
-  // (dilepas otomatis saat selesai); timer via Web Worker menghindari perlambatan timer tab latar belakang di desktop.
+  // ---- Wake Lock + timer di latar belakang ----
   var wakeLockSentinel = null;
   function syncWakeLock(){
     try {
@@ -1512,8 +1286,7 @@
         bgTimerWorker.onmessage = function(e){ var cb = bgTimerCbs[e.data]; if (cb){ delete bgTimerCbs[e.data]; cb(); } };
       }
       bgTimerWorker.postMessage({ id: id, ms: ms });
-    } catch (e){ /* worker tidak tersedia: jatuh ke timer biasa di bawah */ }
-    // Cadangan: kalau worker tidak menjawab, timer biasa yang menjalankan (dedup lewat bgTimerCbs).
+    } catch (e){}
     setTimeout(function(){ var cb = bgTimerCbs[id]; if (cb){ delete bgTimerCbs[id]; cb(); } }, ms + 3000);
   }
 
@@ -1543,7 +1316,7 @@
     el.pillClientId.textContent = "ClientID: " + (clientIds.length ? clientIds.length + " tersimpan" : "Belum");
     el.pillClientId.className = "pill" + (clientIds.length ? " ok" : "");
 
-    el.addAccountBtn.disabled = false; // login akun sekarang lewat backend, tidak butuh Client ID GSI/gsiReady
+    el.addAccountBtn.disabled = !gsiReady || clientIds.length === 0;
 
     var activeCount = accounts.length;
     if (activeCount > 0){
@@ -1562,90 +1335,30 @@
       updateReloginAllBtn();
       return;
     }
-    // Kuota "quotaExceeded" itu milik Client ID (project Google Cloud), bukan milik akun.
-    // Jadi kalau salah satu akun di suatu Client ID kena quotaExceeded, SEMUA akun di Client ID itu
-    // ditandai clientQuotaFull, walaupun usedCount masing-masing akun belum sampai limitPerAccount.
-    var fullClientIds = {};
-    accounts.forEach(function(a){
-      if (a.clientQuotaFull) fullClientIds[a.clientId] = (fullClientIds[a.clientId] || 0) + 1;
-    });
-    var fullClientIdKeys = Object.keys(fullClientIds);
-    var bannerHtml = "";
-    if (fullClientIdKeys.length > 0){
-      var lines = fullClientIdKeys.map(function(cid){
-        return "Client " + escapeHtml(shortClientId(cid)) + " (" + fullClientIds[cid] + " akun)";
-      }).join(", ");
-      bannerHtml = '<div class="client-quota-banner">&#9888; <b>Kuota harian Client ID habis</b> untuk: ' + lines +
-        '. Kuota ini <b>dibagi bersama semua akun</b> yang pakai Client ID yang sama &mdash; jadi walaupun angka "terpakai/limit" tiap akun masih kecil, statusnya tetap "Kuota Client habis" karena satu Client ID sudah kena batas Google. Tambah Client ID baru atau tunggu reset esok hari (waktu Pasifik).</div>';
-    }
-
-    // Kelompokkan akun per Client ID, urutan grup mengikuti urutan kemunculan pertama tiap Client ID
-    // di array accounts (supaya urutan akun #1, #2 dst di kartu tetap konsisten dengan router).
-    var groupOrder = [];
-    var groups = {};
-    accounts.forEach(function(a, idx){
-      var cid = a.clientId;
-      if (!groups[cid]){ groups[cid] = []; groupOrder.push(cid); }
-      groups[cid].push(idx);
-    });
-
     var html = "";
-    groupOrder.forEach(function(cid){
-      var memberIdxs = groups[cid];
-      var clientUsed = usedCountForClient(cid);
-      var isSolo = memberIdxs.length === 1;
-      var groupIsFull = clientUsed >= limitPerAccount || memberIdxs.some(function(i){ return accounts[i].clientQuotaFull; });
-      var pct = Math.max(0, Math.min(100, Math.round((clientUsed / limitPerAccount) * 100)));
-
-      // Header grup: SATU angka kuota per Client ID (bukan diulang di tiap kartu), plus siapa saja
-      // yang berbagi jatah itu. Disembunyikan lewat CSS (.client-group.solo) kalau cuma 1 akun,
-      // karena "dibagi 1" tidak perlu dijelaskan.
-      var headHtml = '<div class="client-group-head' + (groupIsFull ? ' full' : '') + '">' +
-        '<span>Client <b>' + escapeHtml(shortClientId(cid)) + '</b> &bull; ' + memberIdxs.length + ' akun berbagi jatah ini</span>' +
-        '<span class="cg-bar-wrap"><span class="cg-bar" style="width:' + pct + '%;"></span></span>' +
-        '<b>' + clientUsed + '/' + limitPerAccount + '</b>' +
+    accounts.forEach(function(acc, idx){
+      var isActive = idx === activeAccountIndex && running;
+      var remMs = tokenRemainingMs(acc);
+      var tokenDead = acc.expired || remMs <= 0;
+      var tokenWarn = !tokenDead && remMs <= TOKEN_WARN_MS;
+      var isExhausted = acc.usedCount >= limitPerAccount || !!acc.clientQuotaFull || !!acc.uploadLimitBlocked;
+      var cls = "acc-card" + (isActive ? " active" : "") + (isExhausted ? " exhausted" : "");
+      var avatarHtml = acc.picture
+        ? '<img src="' + escapeHtml(acc.picture) + '" alt="">'
+        : (acc.email ? acc.email.charAt(0).toUpperCase() : "?");
+      html += '<div class="' + cls + '">' +
+        '<div class="acc-avatar">' + avatarHtml + '</div>' +
+        '<div class="acc-info">' +
+          '<div class="acc-name">' + escapeHtml(acc.channelTitle || acc.name || acc.email || ("Akun " + (idx+1))) + '</div>' +
+          '<div class="acc-sub">' + escapeHtml(acc.email || "") + ' &bull; Client ' + escapeHtml(shortClientId(acc.clientId)) + '</div>' +
+        '</div>' +
+        (isActive ? '<span class="acc-badge-active">AKTIF</span>' : '') +
+        '<div class="acc-quota">' + acc.usedCount + '/' + limitPerAccount + '<br><b>' + (tokenDead ? "Token habis" : (appMode === "live" && acc.liveBlocked ? "Live belum aktif" : acc.uploadLimitBlocked ? "Batas upload channel" : acc.clientQuotaFull ? "Kuota Client habis" : (isExhausted ? "Habis" : "Sisa " + (limitPerAccount - acc.usedCount)))) + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</b></div>' +
+        ((tokenDead || tokenWarn) && !running ? '<button class="acc-relogin' + (tokenDead ? ' urgent' : '') + '" data-relogin="' + idx + '" title="Login ulang akun ini">Login ulang</button>' : '') +
+        '<button class="acc-remove" data-idx="' + idx + '" title="Hapus akun ini">&times;</button>' +
         '</div>';
-
-      var bodyHtml = "";
-      memberIdxs.forEach(function(idx){
-        var acc = accounts[idx];
-        var isActive = idx === activeAccountIndex && running;
-        var remMs = tokenRemainingMs(acc);
-        var tokenDead = acc.expired || remMs <= 0;
-        var tokenWarn = !tokenDead && remMs <= TOKEN_WARN_MS;
-        var isExhausted = groupIsFull || !!acc.uploadLimitBlocked;
-        var cls = "acc-card" + (isActive ? " active" : "") + (isExhausted ? " exhausted" : "");
-        var avatarHtml = acc.picture
-          ? '<img src="' + escapeHtml(acc.picture) + '" alt="">'
-          : (acc.email ? acc.email.charAt(0).toUpperCase() : "?");
-        var statusLabel = tokenDead ? "Token habis" :
-          (appMode === "live" && acc.liveBlocked) ? "Live belum aktif" :
-          acc.uploadLimitBlocked ? "Batas upload channel" :
-          acc.clientQuotaFull ? "Kuota Client habis" :
-          (groupIsFull ? "Habis" : "Sisa " + (limitPerAccount - clientUsed));
-        // Di dalam kartu akun sendiri, TIDAK lagi menampilkan "X/66" (itu sudah ada satu kali di header
-        // grup di atas). Yang ditampilkan di sini cuma kontribusi akun ini: berapa event yang SUDAH ia
-        // upload sendiri -- angka kecil, informatif, tapi tidak mengulang limit supaya tidak menyesatkan.
-        var contribHtml = isSolo
-          ? '<b>' + statusLabel + '</b>'
-          : (acc.usedCount || 0) + ' event via akun ini<br><b>' + statusLabel + '</b>';
-        bodyHtml += '<div class="' + cls + '">' +
-          '<div class="acc-avatar">' + avatarHtml + '</div>' +
-          '<div class="acc-info">' +
-            '<div class="acc-name">' + escapeHtml(acc.channelTitle || acc.name || acc.email || ("Akun " + (idx+1))) + '</div>' +
-            '<div class="acc-sub">' + escapeHtml(acc.email || "") + (isSolo ? ' &bull; Client ' + escapeHtml(shortClientId(acc.clientId)) : '') + '</div>' +
-          '</div>' +
-          (isActive ? '<span class="acc-badge-active">AKTIF</span>' : '') +
-          '<div class="acc-quota">' + contribHtml + (tokenWarn ? '<br><span style="color:#fbbf24;">token ' + fmtRemaining(remMs) + '</span>' : (!tokenDead && acc.loginAt ? '<br><span style="opacity:.7;">token ' + fmtRemaining(remMs) + '</span>' : '')) + '</div>' +
-          ((tokenDead || tokenWarn) && !running ? '<button class="acc-relogin' + (tokenDead ? ' urgent' : '') + '" data-relogin="' + idx + '" title="Login ulang akun ini">Login ulang</button>' : '') +
-          '<button class="acc-remove" data-idx="' + idx + '" title="Hapus akun ini">&times;</button>' +
-          '</div>';
-      });
-
-      html += '<div class="client-group' + (isSolo ? ' solo' : '') + '">' + headHtml + '<div class="client-group-body">' + bodyHtml + '</div></div>';
     });
-
-    el.accountsList.innerHTML = bannerHtml + html;
+    el.accountsList.innerHTML = html;
     Array.prototype.forEach.call(el.accountsList.querySelectorAll(".acc-relogin"), function(btn){
       btn.addEventListener("click", function(){
         var i = parseInt(this.getAttribute("data-relogin"), 10);
@@ -1665,28 +1378,7 @@
   function removeAccount(idx){
     if (running){ showToast("Tidak bisa hapus akun saat sedang upload"); return; }
     var acc = accounts[idx];
-    if (!acc) return;
-    if (acc.clientId === "backend"){
-      // Akun dikelola backend: hapus refresh_token-nya di server dulu, baru hilangkan dari daftar lokal.
-      showToast("Menghapus akun dari backend...");
-      backendRemoveAccount(acc.backendAccountId).then(function(res){
-        if (res && res.error){
-          log("Gagal hapus akun di backend: " + res.error, "error");
-          showToast("Gagal hapus akun di backend");
-          return;
-        }
-        accounts.splice(idx, 1);
-        if (activeAccountIndex >= accounts.length) activeAccountIndex = Math.max(0, accounts.length - 1);
-        persistAccounts();
-        log("Akun " + (acc.channelTitle || acc.email || "") + " dihapus dari backend & daftar.", "info");
-        updateGeneralUi();
-      }).catch(function(e){
-        log("Gagal terhubung ke backend saat hapus akun: " + e, "error");
-        showToast("Gagal terhubung ke backend");
-      });
-      return;
-    }
-    if (acc.token && window.google){
+    if (acc && acc.token && window.google){
       try { window.google.accounts.oauth2.revoke(acc.token, function(){}); } catch (e){}
     }
     accounts.splice(idx, 1);
@@ -1696,9 +1388,6 @@
     updateGeneralUi();
   }
 
-  // Token akses disimpan di sessionStorage: per tab, hilang saat tab ditutup, dan hanya selama token masih berlaku (maks ~60 menit).
-  // Tujuannya supaya refresh / tab yang dibuang Android saat pindah aplikasi tidak memaksa login ulang di jam yang sama.
-  // Token TIDAK pernah masuk localStorage (yang bertahan permanen).
   var SS_TOKENS = STORAGE_PREFIX + "yt_csv_tok";
   function persistSessionTokens(){
     try {
@@ -1718,9 +1407,6 @@
   }
 
   function persistAccounts(){
-    // Info ringan (tanpa token) disimpan di localStorage; token sesi disimpan terpisah di sessionStorage (lihat di atas).
-    // Dipakai buat memulihkan DAFTAR akun (email/channel) setelah refresh, supaya user tinggal "Login ulang"
-    // per akun (lewat login_hint) alih-alih "Tambah Akun" dari nol dan harus ingat2 100 email satu-satu.
     try {
       var lite = accounts.map(function(a){ return { email: a.email, name: a.name, channelTitle: a.channelTitle, clientId: a.clientId, usedCount: a.usedCount || 0, usedDay: a.usedDay || pacificDateKey() }; });
       localStorage.setItem("yt_csv_accounts_meta", JSON.stringify(lite));
@@ -1760,12 +1446,10 @@
           scope: "https://www.googleapis.com/auth/youtube.upload https://www.googleapis.com/auth/youtube https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email",
           callback: function(resp){
             if (resp.access_token){
-              // Hasil dari percobaan perpanjangan otomatis (silent, prompt:"")?
               if (pendingSilentRefresh && pendingSilentRefresh.clientId === cid){
                 handleSilentRefreshToken(cid, resp.access_token, resp);
                 return;
               }
-              // Login ulang untuk akun tertentu? (pendingRelogin diisi oleh tombol "Login ulang")
               if (pendingRelogin && pendingRelogin.clientId === cid){
                 handleReloginToken(cid, resp.access_token, resp);
                 return;
@@ -1816,7 +1500,6 @@
       .then(function(r){ if (!r.ok) throw new Error("userinfo gagal"); return r.json(); })
       .then(function(d){
         acc.email = d.email; acc.name = d.name; acc.picture = d.picture;
-        // Akun yang sama (email sama) di Client ID yang sama = duplikat, buang yang baru supaya kuota tidak dihitung ganda.
         var dupIdx = -1;
         accounts.forEach(function(a, i){ if (a !== acc && a.email && a.email === acc.email && a.clientId === acc.clientId) dupIdx = i; });
         if (dupIdx !== -1){
@@ -1920,20 +1603,18 @@
     }
   }
 
-  // Pilih Client ID otomatis: pakai urutan tetap (#1, #2, dst) — habiskan Client ID pertama dulu
-  // (semua akun & kuotanya) baru pindah ke Client ID berikutnya kalau yang pertama sudah penuh/bermasalah.
   function pickAutoClientId(){
     if (clientIds.length === 0) return "";
     var best = null;
     clientIds.forEach(function(cid){
       var q = getClientQuota(cid);
       var left = appMode === "live" ? Math.max(0, COST.DAILY_UNITS - q.liveUnits) : Math.max(0, COST.VIDEO_BUCKET - q.videoSlots);
-      if (left <= 0) return;   // Client ID ini kuotanya sudah habis hari ini, lewati, cari yang berikutnya
+      if (left <= 0) return;
       var stillOk = accountsOfClient(cid).some(function(a){ return !a.expired && !a.clientQuotaFull; });
-      if (accountsOfClient(cid).length > 0 && !stillOk) return;   // semua akun di Client ID ini bermasalah (token habis/kuota penuh), lewati
-      if (best === null){ best = cid; }   // ambil Client ID PERTAMA dalam urutan yang masih layak dipakai
+      if (accountsOfClient(cid).length > 0 && !stillOk) return;
+      if (best === null){ best = cid; }
     });
-    if (best === null) best = clientIds[0];   // fallback: semua penuh, tetap kembalikan yang pertama biar user lihat pesan errornya
+    if (best === null) best = clientIds[0];
     return best;
   }
 
@@ -1944,18 +1625,17 @@
     var tc = tokenClients[acc.clientId];
     if (!tc){ setupTokenClientIfPossible(); tc = tokenClients[acc.clientId]; }
     if (!tc){ showToast("GSI belum siap / Client ID tidak ditemukan"); return; }
-    markManualLogin();   // batalkan perpanjangan otomatis yang tertunda & tahan yang baru
+    markManualLogin();
     pendingRelogin = { acc: acc, clientId: acc.clientId, email: acc.email || null };
     log("Login ulang: " + (acc.email || acc.channelTitle || "akun") + " (Client ID " + shortClientId(acc.clientId) + "). Pilih akun yang sama di popup.", "info");
     var opts = { prompt: "select_account" };
-    if (acc.email) opts.login_hint = acc.email;      // popup langsung mengarah ke akun ini
+    if (acc.email) opts.login_hint = acc.email;
     try { tc.requestAccessToken(opts); }
     catch (e){ log("Gagal membuka popup login ulang: " + e, "error"); finishRelogin(false); }
   }
 
   function handleReloginToken(cid, token, resp){
     var target = pendingRelogin.acc;
-    // Cek siapa yang benar-benar login di popup: jangan sampai token akun lain menimpa token akun ini.
     fetch("https://www.googleapis.com/oauth2/v3/userinfo", { headers: { Authorization: "Bearer " + token } })
       .then(function(r){ if (!r.ok) throw new Error("userinfo gagal (" + r.status + ")"); return r.json(); })
       .then(function(d){
@@ -1971,7 +1651,7 @@
         target.expired = false;
         silentRefreshFails[target.id] = 0;
         if (!target.email && d.email){ target.email = d.email; target.name = d.name; target.picture = d.picture; }
-        log("✓ Login ulang berhasil: " + (target.email || "akun") + ". Token baru dipakai sampai sekitar " + Math.round(tokenRemainingMs(target) / 60000) + " menit lagi. Penggunaan Client ID " + usedCountForClient(target.clientId) + "/" + limitPerAccount + " dipertahankan.", "success");
+        log("✓ Login ulang berhasil: " + (target.email || "akun") + ". Token baru dipakai sampai sekitar " + Math.round(tokenRemainingMs(target) / 60000) + " menit lagi. Penggunaan " + target.usedCount + "/" + limitPerAccount + " dipertahankan.", "success");
         showToast("Login ulang berhasil");
         finishRelogin(true);
       })
@@ -1989,7 +1669,6 @@
     if (success && reloginQueue.length){
       var next = reloginQueue.shift();
       log("Login ulang berikutnya (" + (reloginTotal - reloginQueue.length) + "/" + reloginTotal + "): klik OK pada popup.", "info");
-      // Popup harus dipicu oleh klik pengguna agar tidak diblokir browser, jadi antrean menunggu klik berikutnya.
       pendingNextRelogin = next;
       showReloginNextPrompt();
     } else {
@@ -1998,7 +1677,6 @@
     }
   }
 
-  // Browser memblokir popup yang tidak dipicu klik. Jadi untuk antrean, tiap akun butuh 1 klik pada tombol "Lanjut".
   function showReloginNextPrompt(){
     el.reloginAllBtn.style.display = "inline-block";
     el.reloginAllBtn.textContent = "Lanjut login: " + (pendingNextRelogin.email || "akun berikutnya") + " (" + (reloginTotal - reloginQueue.length) + "/" + reloginTotal + ")";
@@ -2006,7 +1684,7 @@
   function hideReloginNextPrompt(){ updateReloginAllBtn(); }
 
   function reloginAllExpired(){
-    if (pendingNextRelogin){                       // lanjutan antrean
+    if (pendingNextRelogin){
       var acc = pendingNextRelogin; pendingNextRelogin = null;
       requestRelogin(acc);
       return;
@@ -2021,7 +1699,7 @@
   }
 
   function updateReloginAllBtn(){
-    if (pendingNextRelogin) return;      // sedang menampilkan tombol "Lanjut"
+    if (pendingNextRelogin) return;
     var need = accounts.filter(function(a){ return isTokenExpired(a) || tokenRemainingMs(a) <= TOKEN_WARN_MS; }).length;
     if (need > 0){
       el.reloginAllBtn.style.display = "inline-block";
@@ -2038,7 +1716,7 @@
     var tc = tokenClients[cid];
     if (!tc){ setupTokenClientIfPossible(); tc = tokenClients[cid]; }
     if (!tc){ showToast("GSI belum siap, cek internet"); return; }
-    markManualLogin();   // batalkan perpanjangan otomatis yang tertunda & tahan yang baru
+    markManualLogin();
     log("Membuka popup login memakai Client ID " + shortClientId(cid) + " (dipilih otomatis)...", "info");
     tc.requestAccessToken({ prompt: "select_account" });
   }
@@ -2069,6 +1747,43 @@
     showToast("Log diunduh");
   }
 
+  // ================= UNDUH CHAT ID (BARU) =================
+  function downloadChatIds(){
+    var rows = events.filter(function(r){ return r.liveChatId && r.videoId; });
+    if (!rows.length){ showToast("Belum ada liveChatId yang tersimpan"); return; }
+
+    function csvEsc(s){
+      s = String(s == null ? "" : s);
+      if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+      return s;
+    }
+
+    var lines = ["title,date,time,videoId,liveChatId,url_video,url_chat"];
+    rows.forEach(function(r){
+      lines.push([
+        csvEsc(r.title),
+        csvEsc(r.date),
+        csvEsc(r.time + " " + timeLabel(r)),
+        csvEsc(r.videoId),
+        csvEsc(r.liveChatId),
+        "https://youtu.be/" + r.videoId,
+        "https://www.youtube.com/live_chat?v=" + r.videoId + "&is_popout=1"
+      ].join(","));
+    });
+
+    var content = "\uFEFF" + lines.join("\r\n") + "\r\n";
+    var blob = new Blob([content], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = "live-chat-ids-" + new Date().toISOString().slice(0, 10) + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+    log(rows.length + " liveChatId diekspor ke CSV.", "success");
+    showToast(rows.length + " chat ID diunduh");
+  }
+
   // ================= DOWNLOAD TEMPLATE =================
   function downloadCsvTemplate(){
     showToast("Download template CSV...");
@@ -2082,7 +1797,7 @@
     setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
   }
 
-  // ================= GAMBAR -> VIDEO 5 DETIK (dirender per event) =================
+  // ================= GAMBAR -> VIDEO 40 DETIK =================
   function isRecorderSupported(){
     return typeof MediaRecorder !== "undefined" && typeof HTMLCanvasElement !== "undefined" &&
            typeof HTMLCanvasElement.prototype.captureStream === "function";
@@ -2096,7 +1811,6 @@
     return "";
   }
 
-  // potong teks ke beberapa baris sesuai lebar
   function wrapText(ctx, text, maxWidth, maxLines){
     var words = String(text).split(/\s+/);
     var lines = [], line = "";
@@ -2105,7 +1819,6 @@
       if (ctx.measureText(test).width > maxWidth && line){
         lines.push(line); line = words[i];
         if (lines.length === maxLines - 1){
-          // sisa kata digabung ke baris terakhir, lalu dipotong dengan "..."
           line = words.slice(i).join(" ");
           break;
         }
@@ -2127,9 +1840,6 @@
     return parseInt(m[3], 10) + " " + bulan[parseInt(m[2], 10) - 1] + " " + m[1];
   }
 
-  // Pilih gambar upload untuk baris tertentu: dibagi bergilir (round-robin) berdasarkan posisi
-  // baris itu di daftar "events" (BUKAN posisi di antrean upload), supaya tiap baris selalu dapat
-  // gambar yang sama walau di-retry di akun lain. Kalau tidak ada gambar upload, return null (desain otomatis).
   function pickImageForRow(row){
     if (!userImages.length) return null;
     if (!row) return userImages[0].img;
@@ -2138,12 +1848,10 @@
     return userImages[i % userImages.length].img;
   }
 
-  // Gambar satu frame ke canvas: mode upload (gambar user, bergilir kalau >1) atau desain otomatis dari judul.
   function drawFrame(ctx, row){
     var W = VIDEO_W, H = VIDEO_H;
     var img = pickImageForRow(row);
     if (img){
-      // cover: isi penuh 16:9 tanpa gepeng
       ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
       var iw = img.naturalWidth, ih = img.naturalHeight;
       var scale = Math.max(W / iw, H / ih);
@@ -2161,7 +1869,6 @@
       }
       return;
     }
-    // desain otomatis
     var bg = ctx.createLinearGradient(0, 0, W, H);
     bg.addColorStop(0, "#0f0f0f"); bg.addColorStop(1, "#2a0a0a");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
@@ -2180,7 +1887,6 @@
     }
   }
 
-  // Render satu gambar thumbnail 1280x720 (JPEG, dijaga < 2 MB sesuai batas thumbnails.set). cb(err, blob).
   function renderThumbnailForRow(row, cb){
     try {
       var c = document.createElement("canvas");
@@ -2201,7 +1907,6 @@
     } catch (e){ cb("Gagal membuat thumbnail: " + (e.message || e)); }
   }
 
-  // Render satu video WebM 5 detik dari canvas. cb(err, blob).
   function renderVideoForRow(row, cb){
     if (!isRecorderSupported()){
       cb("Browser ini tidak mendukung MediaRecorder/captureStream (coba Chrome/Edge/Firefox desktop atau Android).");
@@ -2236,9 +1941,7 @@
         if (blob.size === 0){ finish("Video hasil render kosong."); return; }
         finish(null, blob);
       };
-      // timeslice 1000ms supaya data terkumpul berkala
       recorder.start(1000);
-      // gambar ulang tiap 100ms agar captureStream terus menghasilkan frame
       var tick = setInterval(function(){ drawFrame(ctx, row); }, 100);
       setTimeout(function(){
         if (recorder.state !== "inactive") recorder.stop();
@@ -2248,7 +1951,6 @@
     }
   }
 
-  // ---- galeri gambar upload user (bisa lebih dari satu, dibagi bergilir per event) ----
   function addUserImages(fileList){
     if (!fileList || !fileList.length) return;
     var files = Array.prototype.slice.call(fileList);
@@ -2329,7 +2031,6 @@
     renderAssetPreview();
   }
 
-  // Preview: kalau >1 gambar, tampilkan beberapa contoh frame berurutan supaya rotasinya kelihatan.
   function renderAssetPreview(){
     el.assetPreview.innerHTML = "";
     var showMulti = userImages.length > 1 && events.length > 0;
@@ -2352,8 +2053,7 @@
     }
   }
 
-  // ================= JADWAL LIVE (liveBroadcasts.insert + thumbnails.set + videos.update) =================
-  // Klasifikasi error khusus live: reason di JSON menentukan apakah akun/channel-nya yang bermasalah (bukan kuota).
+  // ================= JADWAL LIVE =================
   function classifyLiveError(status, bodyText){
     var base = classifyApiError(status, bodyText);
     var reasons = [];
@@ -2368,8 +2068,6 @@
     return out;
   }
 
-  // Satu event live. Tahap: 1) insert broadcast (wajib)  2) thumbnail (opsional)  3) tags via videos.update (opsional).
-  // Tahap 2 & 3 gagal TIDAK membatalkan tahap 1: broadcast sudah jadi, hanya dilaporkan sebagai peringatan.
   function createLiveEvent(row, token, thumbBlob, cb){
     var startUtc = rowUtcIso(row);
     if (!startUtc){ cb({ ok: false, error: "Format tanggal/jam salah" }); return; }
@@ -2401,15 +2099,15 @@
           return;
         }
         var bc; try { bc = JSON.parse(txt); } catch (e){ cb({ ok: false, error: "Response broadcast bukan JSON valid" }); return; }
-        var videoId = bc.id;   // id broadcast = id video di YouTube
-        var liveChatId = bc.snippet && bc.snippet.liveChatId ? bc.snippet.liveChatId : null;   // dipakai buat post pesan ke Live Chat (bukan comment biasa)
+        var videoId = bc.id;
+        // ===== BARU: ekstrak liveChatId dari response liveBroadcasts.insert =====
+        var liveChatId = (bc.snippet && bc.snippet.liveChatId) ? bc.snippet.liveChatId : null;
         var warnings = [];
 
-        // ---- tahap 2: thumbnail (retry otomatis kalau kena rate limit 429, burst limit thumbnails.set beda dari kuota harian) ----
         var stepThumb = function(next){
           if (!thumbBlob){ next(); return; }
           var attempt = 0;
-          var MAX_ATTEMPTS = 3;   // percobaan awal + 2x retry khusus 429
+          var MAX_ATTEMPTS = 3;
           var tryOnce = function(){
             attempt++;
             fetch("https://www.googleapis.com/upload/youtube/v3/thumbnails/set?videoId=" + encodeURIComponent(videoId) + "&uploadType=media", {
@@ -2421,7 +2119,6 @@
               if (r.ok){ next(); return; }
               return r.text().then(function(t){
                 if (r.status === 429 && attempt < MAX_ATTEMPTS){
-                  // 429 di thumbnails.set biasanya burst rate limit sesaat (bukan kuota harian habis) -> tunggu lalu coba lagi
                   var delayMs = attempt === 1 ? 4000 : 10000;
                   log("⏳ Thumbnail kena rate limit (429) untuk \"" + row.title + "\", coba lagi otomatis dalam " + (delayMs / 1000) + " detik (percobaan " + (attempt + 1) + "/" + MAX_ATTEMPTS + ")...", "info");
                   setTimeout(tryOnce, delayMs);
@@ -2439,10 +2136,8 @@
           tryOnce();
         };
 
-        // ---- tahap 3: tags lewat videos.update (liveBroadcast tidak punya field tags) ----
         var stepTags = function(next){
           if (!tags.length){ next(); return; }
-          // videos.update MENIMPA seluruh snippet, jadi judul & kategori wajib dikirim ulang agar tidak hilang.
           fetch("https://www.googleapis.com/youtube/v3/videos?part=snippet", {
             method: "PUT",
             headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
@@ -2458,15 +2153,29 @@
           }).catch(function(e){ warnings.push("tag: " + (e.message || e)); next(); });
         };
 
-        stepThumb(function(){ stepTags(function(){
+        var stepForcePrivacy = function(next){
+          fetch("https://www.googleapis.com/youtube/v3/videos?part=status", {
+            method: "PUT",
+            headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
+            body: JSON.stringify({ id: videoId, status: { privacyStatus: row.privacy, selfDeclaredMadeForKids: false } })
+          }).then(function(r){
+            costUsed += COST.live.tags;
+            if (r.ok){ next(); return; }
+            return r.text().then(function(t){
+              var c4 = classifyApiError(r.status, t);
+              warnings.push(c4.quota ? "privacy: kuota habis" : "gagal set ulang privacy (" + r.status + ")");
+              next();
+            });
+          }).catch(function(e){ warnings.push("privacy: " + (e.message || e)); next(); });
+        };
+
+        stepThumb(function(){ stepTags(function(){ stepForcePrivacy(function(){
           cb({ ok: true, videoId: videoId, liveChatId: liveChatId, warnings: warnings, unitsUsed: costUsed, error: warnings.length ? warnings.join("; ") : null });
-        }); });
+        }); }); });
       });
     }).catch(function(e){ cb({ ok: false, error: e.message || String(e) }); });
   }
 
-  // Set ulang thumbnail utk 1 videoId yang sudah ada (dipakai fitur "Perbaiki Thumbnail Gagal"), dengan retry 429 sama seperti stepThumb di atas.
-  // cb(err, attemptsMade) -> attemptsMade dipakai buat estimasi kuota (tiap percobaan == 50 unit, baik sukses atau gagal).
   function setThumbnailWithRetry(videoId, token, blob, title, cb){
     var attempt = 0, MAX_ATTEMPTS = 3;
     var tryOnce = function(){
@@ -2492,8 +2201,6 @@
     tryOnce();
   }
 
-  // Perbaiki thumbnail utk baris yang sudah sukses jadi jadwal live tapi thumbnail-nya gagal ke-set sebelumnya.
-  // TIDAK bikin ulang jadwal live-nya (videoId lama dipakai lagi), cuma kirim ulang thumbnails.set.
   function retryFailedThumbnails(){
     if (running){ showToast("Tunggu proses upload selesai dulu"); return; }
     var rows = rowsNeedingThumbFix();
@@ -2515,7 +2222,6 @@
         return;
       }
       var row = rows[i];
-      // cari akun yang match dgn pemilik video ini (harus channel yang sama, bukan sembarang akun) & tokennya masih hidup
       var acc = accounts.find(function(a){
         return !isTokenExpired(a) && ((a.channelTitle && a.channelTitle === row.uploadedVia) || (a.email && a.email === row.uploadedVia));
       });
@@ -2526,8 +2232,7 @@
       }
       renderThumbnailForRow(row, function(err, blob){
         if (err){ log("✗ Gagal render thumbnail \"" + row.title + "\": " + err, "error"); failed++; i++; setTimeout(next, 500); return; }
-        ensureFreshToken(acc).then(function(freshToken){
-        setThumbnailWithRetry(row.videoId, freshToken, blob, row.title, function(err2, attempts){
+        setThumbnailWithRetry(row.videoId, acc.token, blob, row.title, function(err2, attempts){
           addClientQuotaUsage(acc.clientId, "live", (attempts || 1) * COST.live.thumb);
           if (err2){
             log("✗ Thumbnail \"" + row.title + "\" masih gagal: " + err2, "error");
@@ -2538,175 +2243,26 @@
             fixed++;
           }
           i++;
-          setTimeout(next, 1500);   // jeda antar-perbaikan biar gak kena 429 lagi
-        });
-        }).catch(function(err2){
-          log("✗ Thumbnail \"" + row.title + "\" gagal: token akun tidak bisa diperbarui (" + err2.message + ")", "error");
-          failed++; i++; setTimeout(next, 500);
+          setTimeout(next, 1500);
         });
       });
     }
     next();
   }
 
-  // ================= KOMENTAR OTOMATIS (commentThreads.insert / liveChatMessages.insert) =================
-  // Video/broadcast yang BARU dibuat butuh waktu untuk "matang" di backend YouTube -> commentThreads.insert
-  // yang ditembak langsung setelah videos.insert/liveBroadcasts.insert sering gagal (processingFailure/400,
-  // kadang forbidden/403). Solusinya BUKAN comment per-event di tengah loop upload, tapi:
-  //   1) selesaikan dulu SEMUA event (video/jadwal live) di loop utama,
-  //   2) baru setelah itu, loop LAGI dari awal daftar event yang sukses dan post komentar satu-satu,
-  //      dengan jeda awal + retry berjenjang (sama pola dengan setThumbnailWithRetry di atas).
-  //
-  // PENTING untuk mode Jadwal Live: broadcast yang masih "upcoming" (belum live) TIDAK punya comment
-  // thread biasa sama sekali -- yang aktif cuma panel Live Chat, walau broadcast-nya belum mulai.
-  // Makanya untuk row.mode === "live" (dan ada row.liveChatId dari liveBroadcasts.insert), kita pakai
-  // liveChatMessages.insert, BUKAN commentThreads.insert. Untuk mode Video (VOD biasa) tetap pakai
-  // commentThreads.insert seperti biasa.
-  function postCommentWithRetry(videoId, token, text, cb){
-    var attempt = 0, MAX_ATTEMPTS = 4;
-    var tryOnce = function(){
-      attempt++;
-      fetch("https://www.googleapis.com/youtube/v3/commentThreads?part=snippet", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
-        body: JSON.stringify({ snippet: { videoId: videoId, topLevelComment: { snippet: { textOriginal: text } } } })
-      }).then(function(r){
-        if (r.ok){ cb(null, attempt); return; }
-        return r.text().then(function(t){
-          var isProcessing = /processingFailure/i.test(t);
-          var retryable = (r.status === 400 && isProcessing) || r.status === 429 || r.status >= 500;
-          if (retryable && attempt < MAX_ATTEMPTS){
-            // video/broadcast belum "matang" atau rate limit sesaat -> tunggu makin lama tiap percobaan
-            var delayMs = [5000, 10000, 20000][attempt - 1] || 20000;
-            log("⏳ Komentar belum bisa diposting (" + r.status + (isProcessing ? " processingFailure" : "") + "), coba lagi dalam " + (delayMs / 1000) + " detik (percobaan " + (attempt + 1) + "/" + MAX_ATTEMPTS + ")...", "info");
-            setTimeout(tryOnce, delayMs);
-            return;
-          }
-          var c = classifyApiError(r.status, t);
-          var reason = c.quota ? "kuota habis" :
-            r.status === 403 ? "ditolak (403, komentar mungkin dimatikan di channel/video ini, atau video ini live upcoming -> pakai Live Chat, bukan comment biasa)" :
-            (isProcessing ? "video masih diproses YouTube setelah " + attempt + "x coba (processingFailure)" : "gagal (" + r.status + ")");
-          cb(reason, attempt);
-        });
-      }).catch(function(e){ cb(e.message || String(e), attempt); });
-    };
-    tryOnce();
-  }
-
-  // Post pesan ke Live Chat broadcast (liveChatMessages.insert). Dipakai untuk mode Jadwal Live,
-  // karena broadcast upcoming belum punya comment thread biasa, tapi panel Live Chat-nya SUDAH aktif.
-  function postLiveChatMessageWithRetry(liveChatId, token, text, cb){
-    var attempt = 0, MAX_ATTEMPTS = 4;
-    var tryOnce = function(){
-      attempt++;
-      fetch("https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet", {
-        method: "POST",
-        headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json; charset=UTF-8" },
-        body: JSON.stringify({
-          snippet: {
-            liveChatId: liveChatId,
-            type: "textMessageEvent",
-            textMessageDetails: { messageText: text }
-          }
-        })
-      }).then(function(r){
-        if (r.ok){ cb(null, attempt); return; }
-        return r.text().then(function(t){
-          var permanent = /liveChatEnded|liveChatNotFound|liveChatDisabled/i.test(t);
-          var retryable = !permanent && (r.status === 429 || r.status >= 500 || (r.status === 403 && attempt === 1));
-          // liveChat baru dibuat butuh sedikit waktu juga untuk siap menerima pesan -> retry singkat dulu
-          if (retryable && attempt < MAX_ATTEMPTS){
-            var delayMs = [3000, 6000, 12000][attempt - 1] || 12000;
-            log("⏳ Pesan Live Chat belum bisa diposting (" + r.status + "), coba lagi dalam " + (delayMs / 1000) + " detik (percobaan " + (attempt + 1) + "/" + MAX_ATTEMPTS + ")...", "info");
-            setTimeout(tryOnce, delayMs);
-            return;
-          }
-          var c = classifyApiError(r.status, t);
-          var reason = c.quota ? "kuota habis" :
-            /liveChatEnded/i.test(t) ? "live chat sudah berakhir (broadcast selesai)" :
-            /liveChatNotFound/i.test(t) ? "live chat tidak ditemukan (liveChatId tidak valid/broadcast dihapus)" :
-            r.status === 403 ? "ditolak (403, live chat mungkin dimatikan di broadcast ini)" :
-            "gagal (" + r.status + ")";
-          cb(reason, attempt);
-        });
-      }).catch(function(e){ cb(e.message || String(e), attempt); });
-    };
-    tryOnce();
-  }
-
-  // Fallback untuk event LAMA (dibuat sebelum liveChatId disimpan otomatis): tanya YouTube langsung
-  // liveChatId dari videoId broadcast-nya, supaya tidak perlu bikin ulang jadwal live-nya.
-  function fetchLiveChatId(videoId, token){
-    return fetch("https://www.googleapis.com/youtube/v3/liveBroadcasts?part=snippet&id=" + encodeURIComponent(videoId), {
-      headers: { "Authorization": "Bearer " + token }
-    }).then(function(r){ return r.json(); }).then(function(d){
-      return (d.items && d.items[0] && d.items[0].snippet && d.items[0].snippet.liveChatId) || null;
-    }).catch(function(){ return null; });
-  }
-
-  // Post komentar yang SAMA ke tiap event yang sukses dibuat pada sesi bulk-create ini.
-  // Dipanggil SETELAH loop utama (runBulkCreate) selesai, bukan di tengah-tengah.
-  // targets: opsional, default = semua event ready. skipInitialDelay: true kalau dipicu manual (event sudah lama dibuat, gak perlu tunggu).
-  function runAutoComments(targets, skipInitialDelay){
-    var text = (el.autoCommentText && el.autoCommentText.value || "").trim();
-    if (!text){ if (skipInitialDelay) showToast("Isi dulu teks komentarnya"); return; }
-    if (!skipInitialDelay && (!el.autoCommentChk || !el.autoCommentChk.checked)) return;
-    var rows = (targets || events).filter(function(r){ return r.status === "sukses" && (r.videoId || r.liveChatId); });
-    if (!rows.length){ log("Komentar otomatis: tidak ada event sukses untuk dikomentari.", "info"); if (skipInitialDelay) showToast("Belum ada event Sukses untuk dikomentari"); return; }
-
-    log("Menunggu sejenak lalu mulai posting komentar otomatis ke " + rows.length + " event (dari awal daftar)...", "info");
-    if (el.postCommentsBtn) el.postCommentsBtn.disabled = true;
-    var i = 0, ok = 0, failed = 0, noAcc = 0;
-    function next(){
-      if (i >= rows.length){
-        if (el.postCommentsBtn) el.postCommentsBtn.disabled = false;
-        log("Selesai komentar otomatis: " + ok + " berhasil, " + failed + " gagal, " + noAcc + " butuh login akun dulu.", ok ? "success" : "error");
-        showToast(ok + " komentar terkirim" + ((failed || noAcc) ? ", " + (failed + noAcc) + " belum" : ""));
-        return;
-      }
-      var row = rows[i];
-      var acc = accounts.find(function(a){
-        return !isTokenExpired(a) && ((a.channelTitle && a.channelTitle === row.uploadedVia) || (a.email && a.email === row.uploadedVia));
-      });
-      if (!acc){
-        log("⏭ Lewati komentar \"" + row.title + "\": akun \"" + row.uploadedVia + "\" belum login/tokennya habis.", "error");
-        noAcc++; i++; next();
-        return;
-      }
-      ensureFreshToken(acc).then(function(freshToken){
-        // Mode Jadwal Live dengan liveChatId -> pakai Live Chat (comment thread biasa belum aktif untuk broadcast upcoming).
-        // Mode Video (VOD) atau live tanpa liveChatId (fallback) -> comment thread biasa.
-        var wantsLiveChat = row.mode === "live";
-        var getLiveChatId = (wantsLiveChat && !row.liveChatId)
-          ? fetchLiveChatId(row.videoId, freshToken).then(function(id){ row.liveChatId = id; return id; })
-          : Promise.resolve(row.liveChatId);
-        getLiveChatId.then(function(liveChatId){
-          var useLiveChat = wantsLiveChat && liveChatId;
-          var poster = useLiveChat
-            ? function(cb2){ postLiveChatMessageWithRetry(liveChatId, freshToken, text, cb2); }
-            : function(cb2){ postCommentWithRetry(row.videoId, freshToken, text, cb2); };
-          poster(function(err){
-            if (err){ log("✗ " + (useLiveChat ? "Pesan Live Chat" : "Komentar") + " \"" + row.title + "\" gagal: " + err, "error"); failed++; }
-            else { log("✓ " + (useLiveChat ? "Pesan Live Chat terkirim" : "Komentar terpasang") + " di \"" + row.title + "\".", "success"); ok++; }
-            i++;
-            setTimeout(next, 2000);   // jeda antar-komentar biar gak kena rate limit
-          });
-        });
-      }).catch(function(err2){
-        log("✗ Komentar \"" + row.title + "\" gagal: token akun tidak bisa diperbarui (" + err2.message + ")", "error");
-        failed++; i++; setTimeout(next, 500);
-      });
-    }
-    // jeda awal sebelum event PERTAMA sekalipun, karena baru saja selesai dibuat di loop utama
-    setTimeout(next, skipInitialDelay ? 0 : 5000);
-  }
-
   // ================= UPLOAD KE YOUTUBE (videos.insert) =================
-  // token dioper eksplisit (bukan global) supaya jelas akun mana yang dipakai tiap panggilan.
   function uploadOneEvent(row, token, videoBlob, cb){
     var publishAtUtc = rowUtcIso(row);
-    if (!publishAtUtc){ cb({ ok: false, error: "Format tanggal/jam salah" }); return; }
-    if (isPastUtc(publishAtUtc)){ cb({ ok: false, skipped: true, error: "Tanggal sudah lewat, di-skip" }); return; }
+
+    var wantsImmediate = (row.privacy && row.privacy !== "private");
+    var statusObj;
+    if (wantsImmediate){
+      statusObj = { privacyStatus: row.privacy, selfDeclaredMadeForKids: false };
+    } else {
+      if (!publishAtUtc){ cb({ ok: false, error: "Format tanggal/jam salah" }); return; }
+      if (isPastUtc(publishAtUtc)){ cb({ ok: false, skipped: true, error: "Tanggal sudah lewat, di-skip" }); return; }
+      statusObj = { privacyStatus: "private", publishAt: publishAtUtc, selfDeclaredMadeForKids: false };
+    }
 
     var metadata = {
       snippet: {
@@ -2714,12 +2270,7 @@
         description: row.description,
         tags: row.tags ? row.tags.split(",").map(function(t){ return t.trim(); }).filter(Boolean) : []
       },
-      status: {
-        // Wajib "private" saat insert supaya publishAt bisa auto-publish.
-        privacyStatus: "private",
-        publishAt: publishAtUtc,
-        selfDeclaredMadeForKids: false
-      }
+      status: statusObj
     };
 
     fetch("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status", {
@@ -2763,7 +2314,6 @@
     });
   }
 
-  // Klasifikasi error API YouTube berdasarkan status + reason di JSON (bukan sekadar kata "quota").
   function classifyApiError(status, bodyText){
     var reasons = [];
     try {
@@ -2771,12 +2321,10 @@
       var errs = (j && j.error && j.error.errors) || [];
       errs.forEach(function(e){ if (e && e.reason) reasons.push(e.reason); });
     } catch (e){}
-    // uploadLimitExceeded = batas upload per CHANNEL (bukan kuota project) & bisa datang dengan status 400, jadi dipisah dari quota.
     var uploadLimit = reasons.indexOf("uploadLimitExceeded") !== -1 || /exceeded the number of videos/i.test(bodyText);
     var quota = status === 403 && reasons.some(function(r){
       return r === "quotaExceeded" || r === "dailyLimitExceeded" || r === "rateLimitExceeded";
     });
-    // fallback: kalau body bukan JSON tapi jelas menyebut quota
     if (!quota && status === 403 && reasons.length === 0 && /quota/i.test(bodyText)) quota = true;
     var auth = status === 401;
     return { quota: quota, auth: auth, uploadLimit: uploadLimit };
@@ -2784,13 +2332,9 @@
 
   var UPLOAD_LIMIT_HINT = "Channel ini kena BATAS UPLOAD harian dari YouTube (uploadLimitExceeded). Ini batas per channel, bukan kuota API, jadi menambah Client ID tidak membantu. Biasanya reset sekitar 24 jam; verifikasi channel lewat youtube.com/verify (telepon) umumnya menaikkan batasnya. Alternatif: pakai mode Jadwal Live.";
 
-  // Cari akun berikutnya (mulai dari activeAccountIndex) yang kuotanya belum habis.
-  // Return null kalau semua akun sudah habis kuotanya.
   function getNextAvailableAccount(){
     for (var i = activeAccountIndex; i < accounts.length; i++){
-      // Kuotanya milik Client ID, dibagi bersama semua akun se-Client ID -- jadi yang dibandingkan
-      // ke limitPerAccount adalah total usedCount seluruh akun di Client ID itu, bukan punya akun ini saja.
-      if (usedCountForClient(accounts[i].clientId) < limitPerAccount && !isTokenExpired(accounts[i]) && !accounts[i].clientQuotaFull && !accounts[i].uploadLimitBlocked && !(appMode === "live" && accounts[i].liveBlocked)){
+      if (accounts[i].usedCount < limitPerAccount && !isTokenExpired(accounts[i]) && !accounts[i].clientQuotaFull && !accounts[i].uploadLimitBlocked && !(appMode === "live" && accounts[i].liveBlocked)){
         activeAccountIndex = i;
         return accounts[i];
       }
@@ -2805,16 +2349,12 @@
     if (targets.length === 0){ showToast("Pilih event dulu"); return; }
 
     updateLimitPerAccount();
-    // Halaman bisa dibiarkan terbuka lintas hari: buang hitungan pemakaian & tanda 'kuota habis' dari hari sebelumnya.
     var todayKey2 = pacificDateKey(), rolled = 0;
     accounts.forEach(function(a){
       if (a.usedDay && a.usedDay !== todayKey2){ a.usedCount = 0; a.clientQuotaFull = false; a.uploadLimitBlocked = false; a.usedDay = todayKey2; rolled++; }
     });
     if (rolled) log(rolled + " akun direset ke 0 pemakaian karena sudah ganti hari (waktu Pasifik, sama dengan reset kuota Google).", "info");
     activeAccountIndex = 0;
-    // usedCount TIDAK di-reset: kuota harian akun tetap dihitung antar-klik dalam satu sesi halaman.
-    // (akun yang sudah penuh dilewati; tambah akun baru atau naikkan limit kalau perlu)
-    // Cek umur token SEBELUM mulai: token yang sudah lewat umur tidak akan dipakai, yang hampir habis diberi peringatan.
     var newlyExpired = refreshTokenStates();
     if (newlyExpired) log(newlyExpired + " akun tokennya sudah habis dan akan dilewati. Pakai tombol 'Login ulang' pada kartu akun.", "error");
     var soon = accounts.filter(function(a){ return !isTokenExpired(a) && tokenRemainingMs(a) <= TOKEN_WARN_MS; });
@@ -2823,14 +2363,10 @@
     });
     lastRun = { startedAt: Date.now(), total: targets.length, done: 0, finished: false, account: null, reason: "berjalan" };
     saveStateNow();
-    // Rekam kondisi kuota tiap akun di awal supaya jelas kenapa satu akun dipakai/dilewati.
-    // "Terpakai" di sini = total gabungan Client ID (bukan usedCount akun itu sendiri), karena kuotanya bersama.
     accounts.forEach(function(a, i){
-      var cUsed = usedCountForClient(a.clientId);
-      log("Akun #" + (i+1) + " " + (a.channelTitle || a.email || "(belum ada info)") + " [Client " + shortClientId(a.clientId) + "]: terpakai " + cUsed + "/" + limitPerAccount +
-          (cUsed >= limitPerAccount ? " -> Client ID PENUH, akan dilewati" : "") + (a.expired ? " (token habis)" : ""), "info");
+      log("Akun #" + (i+1) + " " + (a.channelTitle || a.email || "(belum ada info)") + ": terpakai " + a.usedCount + "/" + limitPerAccount +
+          (a.usedCount >= limitPerAccount ? " -> PENUH, akan dilewati" : "") + (a.expired ? " (token habis)" : ""), "info");
     });
-    // Kapasitas nyata = jumlah Client ID yang punya akun login x ~5 video. Beri tahu kalau target melebihinya.
     var activeClients = {};
     accounts.forEach(function(a){ if (!a.expired && !a.clientQuotaFull) activeClients[a.clientId] = true; });
     var nClients = Object.keys(activeClients).length;
@@ -2840,7 +2376,7 @@
       log("Peringatan: target " + targets.length + " event melebihi perkiraan kapasitas " + estCap + ". Sisanya kemungkinan ditolak Google (quotaExceeded). Tambah Client ID dari project lain untuk menambah kuota.", "error");
     }
     if (targets.length <= limitPerAccount && accounts.length > 1){
-      log("Catatan: jumlah event (" + targets.length + ") tidak melebihi limit/Client ID (" + limitPerAccount + "), jadi SEMUA event akan dikerjakan akun pertama saja (dan akun lain yang se-Client ID dengannya ikut menggunakan jatah yang sama). Akun di Client ID lain baru dipakai kalau Client ID pertama penuh. Kecilkan 'Limit/Client ID' kalau ingin dibagi lebih awal.", "info");
+      log("Catatan: jumlah event (" + targets.length + ") tidak melebihi limit/akun (" + limitPerAccount + "), jadi SEMUA event akan dikerjakan akun pertama saja. Akun lain baru dipakai kalau akun pertama penuh. Kecilkan 'Limit/akun' kalau ingin dibagi ke beberapa akun.", "info");
     }
 
     running = true;
@@ -2849,7 +2385,7 @@
     el.progressWrap.style.display = "block";
     el.progressLabel.textContent = "0/" + targets.length;
     el.progressFill.style.width = "0%";
-    log("Mulai bulk upload " + targets.length + " event ke " + accounts.length + " akun (limit " + limitPerAccount + " event/hari per Client ID, dibagi bersama akun yang se-Client ID)...", "info");
+    log("Mulai bulk upload " + targets.length + " event ke " + accounts.length + " akun (limit " + limitPerAccount + " event/akun)...", "info");
 
     var idx = 0;
     function next(){
@@ -2863,7 +2399,7 @@
         log("Bulk upload selesai", "success");
         if (lastRun){ lastRun.finished = true; lastRun.reason = "selesai"; lastRun.done = idx; }
         saveStateNow();
-        runAutoComments(targets);
+        renderEventsTable();
         return;
       }
 
@@ -2874,14 +2410,13 @@
         stopRequested = false;
         updateUploadBtnState();
         renderAccountsList();
-        // Hitung PENYEBAB tiap akun tidak bisa dipakai, supaya pesannya tidak menyesatkan (token habis != kuota habis).
         var nTok = 0, nLimit = 0, nQuota = 0, nLive = 0, nUp = 0;
         accounts.forEach(function(a){
           if (isTokenExpired(a)) nTok++;
           else if (a.uploadLimitBlocked) nUp++;
           else if (a.clientQuotaFull) nQuota++;
           else if (appMode === "live" && a.liveBlocked) nLive++;
-          else if (usedCountForClient(a.clientId) >= limitPerAccount) nLimit++;
+          else if (a.usedCount >= limitPerAccount) nLimit++;
         });
         if (nUp > 0 && nUp >= nTok + nLimit + nQuota + nLive){
           showToast("Berhenti: channel kena batas upload harian YouTube");
@@ -2894,13 +2429,12 @@
           log("Semua akun tidak bisa dipakai (token habis: " + nTok + ", limit tercapai: " + nLimit + ", kuota Client habis: " + nQuota + ", batas upload channel: " + nUp + (appMode === "live" ? ", live belum aktif: " + nLive : "") + "). Sisa " + (targets.length - idx) + " event belum diproses. Tambah akun / Client ID, login ulang, atau naikkan limit untuk lanjut.", "error");
         }
         accounts.forEach(function(a, i){
-          log("  Akun #" + (i+1) + " " + (a.channelTitle || a.email || "?") + " [Client " + shortClientId(a.clientId) + "]: " + usedCountForClient(a.clientId) + "/" + limitPerAccount + (a.expired ? " (token habis)" : ""), "error");
+          log("  Akun #" + (i+1) + " " + (a.channelTitle || a.email || "?") + ": " + a.usedCount + "/" + limitPerAccount + (a.expired ? " (token habis)" : ""), "error");
         });
         if (lastRun){ lastRun.finished = true; lastRun.reason = "semua akun habis"; lastRun.done = idx; }
         saveStateNow();
         targets.forEach(function(t){ var r = findEventById(t._id); if (r && r.status === "loading") r.status = "ready"; });
         renderEventsTable();
-        runAutoComments(targets);
         return;
       }
 
@@ -2909,7 +2443,6 @@
       renderEventsTable();
       log("[" + (idx+1) + "/" + targets.length + "] Akun: " + (acc.channelTitle || acc.email || "akun " + (activeAccountIndex+1)) + " -> Render & upload: " + row.title + " @ " + row.date + " " + row.time + " " + timeLabel(row), "info");
 
-      // Cek tanggal lewat DULU sebelum buang 5 detik untuk render video.
       var pubUtc = rowUtcIso(row);
       if (!pubUtc || isPastUtc(pubUtc)){
         row.status = pubUtc ? "skip" : "gagal";
@@ -2920,13 +2453,10 @@
         return;
       }
 
-      // Satu langkah "hasilkan aset lalu kirim". Mode video: render WebM 5 detik -> videos.insert.
-      // Mode live: render JPEG thumbnail -> liveBroadcasts.insert (+ thumbnail + tag). Callback hasil SAMA untuk keduanya.
       var makeAsset = appMode === "live" ? function(row, cb){ cb(null, null); } : renderVideoForRow;
       makeAsset(row, function(renderErr, blob){
         if (renderErr){
           if (appMode === "live"){
-            // thumbnail gagal dibuat TIDAK boleh menggagalkan jadwal live: lanjut tanpa thumbnail dan beri catatan
             log("⚠ Thumbnail gagal dibuat (" + renderErr + "), jadwal live dibuat tanpa thumbnail.", "error");
             blob = null;
           } else {
@@ -2938,9 +2468,8 @@
             return;
           }
         }
-        ensureFreshToken(acc).then(function(freshToken){
         var sender = appMode === "live" ? createLiveEvent : uploadOneEvent;
-        sender(row, freshToken, blob, function(res){
+        sender(row, acc.token, blob, function(res){
           if (res.skipped){
             row.status = "skip";
             row.message = res.error;
@@ -2950,52 +2479,49 @@
           } else if (res.ok){
             row.status = "sukses";
             row.videoId = res.videoId;
-            row.liveChatId = res.liveChatId || null;
+            // ===== BARU: simpan liveChatId dari response ke row =====
+            if (res.liveChatId) row.liveChatId = res.liveChatId;
             row.message = appMode === "live" ? (res.warnings && res.warnings.length ? "Jadwal live dibuat, tapi: " + res.warnings.join("; ") : "Jadwal live dibuat") : "Sukses diupload";
             row.uploadedVia = acc.channelTitle || acc.email;
             row.mode = appMode;
             acc.usedCount++;
             acc.usedDay = pacificDateKey();
             addClientQuotaUsage(acc.clientId, appMode, res.unitsUsed);
-            persistAccounts();   // simpan usedCount terbaru (bukan token) supaya kalau refresh, hitungan ini ikut kepulihkan
+            persistAccounts();
             log("✓ SUKSES" + (appMode === "live" ? " (jadwal live)" : "") + " via " + (acc.channelTitle || acc.email) + ": " + row.title + " -> id " + res.videoId +
+                (res.liveChatId ? " (chat: " + res.liveChatId.slice(0, 12) + "…)" : "") +
                 (res.unitsUsed ? " (" + res.unitsUsed + " unit)" : ""), "success");
             if (res.warnings && res.warnings.length) log("  ⚠ Catatan: " + res.warnings.join("; "), "error");
-            if (usedCountForClient(acc.clientId) >= limitPerAccount){
-              log("Client ID " + shortClientId(acc.clientId) + " (dipakai akun " + (acc.channelTitle || acc.email) + ") sudah mencapai limit " + limitPerAccount + " event/hari, pindah ke akun berikutnya" + (activeAccountIndex + 1 < accounts.length ? " (akun #" + (activeAccountIndex + 2) + ")." : ", TAPI tidak ada akun berikutnya."), "info");
+            if (acc.usedCount >= limitPerAccount){
+              log("Akun " + (acc.channelTitle || acc.email) + " sudah mencapai limit " + limitPerAccount + " event, pindah ke akun berikutnya" + (activeAccountIndex + 1 < accounts.length ? " (akun #" + (activeAccountIndex + 2) + ")." : ", TAPI tidak ada akun berikutnya."), "info");
               activeAccountIndex++;
             }
             idx++;
             advance();
           } else if (res.uploadLimit){
-            // Batas upload harian per CHANNEL: berhenti mencoba akun ini (percuma, semua upload berikutnya pasti ditolak).
             row.status = "ready";
             acc.uploadLimitBlocked = true;
             log("⚠ Akun " + (acc.channelTitle || acc.email) + ": " + UPLOAD_LIMIT_HINT + " Akun ini dilewati.", "error");
             activeAccountIndex++;
-            advance();   // idx TIDAK bertambah
+            advance();
           } else if (res.channelBlocked){
-            // Masalah ada di CHANNEL akun ini (live belum aktif / terblokir / izin kurang), bukan kuota. Lewati akun, coba akun lain.
             row.status = "ready";
             acc.expired = false;
             acc.liveBlocked = true;
             log("⚠ Akun " + (acc.channelTitle || acc.email) + " tidak bisa membuat live: " + res.error + " Akun ini dilewati, event dicoba di akun lain.", "error");
             activeAccountIndex++;
-            advance();   // idx TIDAK bertambah
+            advance();
           } else if (res.quotaExceeded){
-            // Kuota akun habis lebih cepat dari limit manual -> tandai penuh & pindah akun, ULANGI baris yang sama.
-            row.status = "ready"; // kembalikan dari "loading" supaya tidak nyangkut
-            // Kuota YouTube dihitung PER CLIENT ID (project), jadi semua akun di Client ID yang sama ikut penuh.
+            row.status = "ready";
             var sameClient = accountsOfClient(acc.clientId);
             sameClient.forEach(function(a){ a.clientQuotaFull = true; });
             log("⚠ Kuota Client ID " + shortClientId(acc.clientId) + " habis (quotaExceeded). " + sameClient.length + " akun di Client ID ini ditandai penuh; router lompat ke Client ID lain.", "error");
             activeAccountIndex++;
-            advance(); // idx TIDAK bertambah
+            advance();
           } else if (res.authExpired){
-            // Token 401 (kedaluwarsa ~1 jam): tandai akun tak bisa dipakai, ulangi baris di akun lain.
             row.status = "ready";
             log("⚠ Token akun " + (acc.channelTitle || acc.email) + " kedaluwarsa/ditolak (401). Akun dilewati; klik 'Login ulang' pada kartu akun itu untuk lanjut (tidak perlu Tambah Akun baru).", "error");
-            acc.expired = true;   // usedCount TIDAK diubah: kuotanya belum tentu habis, hanya tokennya
+            acc.expired = true;
             activeAccountIndex++;
             advance();
           } else {
@@ -3005,13 +2531,6 @@
             idx++;
             advance();
           }
-        });
-        }).catch(function(err){
-          row.status = "ready";
-          log("Token akun " + (acc.channelTitle || acc.email) + " gagal diperbarui: " + err.message, "error");
-          acc.needsRelogin = true;
-          activeAccountIndex++;
-          advance(); // idx TIDAK bertambah, baris ini diulang nanti di akun berikutnya
         });
       });
     }
@@ -3045,8 +2564,6 @@
         return;
       }
 
-      // Jeda antar-event: dilebarkan khusus mode Live + ada thumbnail upload (thumbnails.set gampang kena rate limit 429
-      // kalau ditembak beruntun cepat), supaya lebih longgar dan gak gampang ke-burst-limit lagi.
       var delayMs = (appMode === "live" && userImages.length) ? 2500 : 1000;
       bgTimeout(next, delayMs);
     }
@@ -3060,16 +2577,13 @@
 
   // ================= EVENT LISTENERS =================
   el.saveClientIdBtn.addEventListener("click", saveClientId);
-  el.addAccountBtn.addEventListener("click", doAddAccountViaBackend);
-  if (el.syncAccountsBtn) el.syncAccountsBtn.addEventListener("click", syncAccountsBtnClick);
-  el.resetBackendSecretBtn.addEventListener("click", resetBackendSecret);
+  el.addAccountBtn.addEventListener("click", doAddAccount);
   el.limitPerAccountInput.addEventListener("change", function(){
-    limitAutoManaged = false;   // user pernah ubah manual -> jangan ditimpa lagi saat ganti mode
+    limitAutoManaged = false;
     updateLimitPerAccount();
-    el.limitPerAccountInput.value = limitPerAccount; // rapikan tampilan setelah selesai mengetik
+    el.limitPerAccountInput.value = limitPerAccount;
   });
   el.limitPerAccountInput.addEventListener("input", function(){
-    // saat mengetik: jangan paksa nilai kosong jadi default; update hanya kalau angka valid
     limitAutoManaged = false;
     var v = parseInt(el.limitPerAccountInput.value, 10);
     if (!isNaN(v) && v >= 1){ limitPerAccount = v; renderAccountsList(); saveState(); }
@@ -3100,7 +2614,6 @@
     renderEventsTable();
   });
   el.uploadAllBtn.addEventListener("click", runBulkCreate);
-  if (el.postCommentsBtn) el.postCommentsBtn.addEventListener("click", function(){ runAutoComments(events, true); });
   el.pauseBtn.addEventListener("click", function(){
     if (!running) return;
     paused = !paused;
@@ -3118,7 +2631,6 @@
     if (!running) return;
     stopRequested = true;
     if (paused){
-      // sudah dijeda (loop tidak jalan) -> hentikan langsung tanpa nunggu advance() berikutnya
       paused = false;
       var fn = pausedResumeFn;
       pausedResumeFn = null;
@@ -3143,15 +2655,12 @@
     saveLog();
   });
   el.downloadLogBtn.addEventListener("click", downloadLog);
+  // ===== BARU: listener tombol Unduh Chat ID =====
+  el.downloadChatIdsBtn.addEventListener("click", downloadChatIds);
   el.fixThumbsBtn.addEventListener("click", retryFailedThumbnails);
   el.downloadTemplateBtn.addEventListener("click", downloadCsvTemplate);
 
   // ================= INIT =================
-  // Catatan: token akses TIDAK disimpan permanen di localStorage demi keamanan
-  // (multi-akun berarti multi-token, dan token expired dalam ~1 jam). Tapi DAFTAR akunnya
-  // (email/channel/clientId, bukan token) tetap dipulihkan di bawah, supaya user tinggal
-  // "Login ulang" per akun (bukan "Tambah Akun" dari nol) setelah refresh.
-  // ---- pulihkan daftar akun (tanpa token) dari sesi sebelumnya ----
   (function restoreAccountsMeta(){
     var raw = null;
     try { raw = localStorage.getItem("yt_csv_accounts_meta"); } catch (e){}
@@ -3163,8 +2672,7 @@
     var sess = loadSessionTokens();
     lite.forEach(function(a){
       if (!a || !a.clientId) return;
-      if (clientIds.indexOf(a.clientId) === -1){ skippedNoClient++; return; }   // Client ID-nya sendiri sudah dihapus, tidak bisa login ulang ke situ
-      // Token dari sesi tab yang sama (sessionStorage) dipakai lagi kalau masih berlaku >1 menit.
+      if (clientIds.indexOf(a.clientId) === -1){ skippedNoClient++; return; }
       var st = null;
       for (var si = 0; si < sess.length; si++){
         if (sess[si] && sess[si].clientId === a.clientId && (sess[si].email || "") === (a.email || "")){ st = sess[si]; break; }
@@ -3177,12 +2685,11 @@
         token: live ? st.token : null,
         loginAt: live ? st.loginAt : null,
         tokenLifeMs: live ? (st.tokenLifeMs || TOKEN_LIFE_MS) : undefined,
-        expired: !live,            // tanpa token yang masih berlaku -> tampil "Token habis, klik Login ulang"
+        expired: !live,
         email: a.email || null,
         name: a.name || null,
         picture: null,
         channelTitle: a.channelTitle || null,
-        // usedCount hanya berlaku di HARI (Pasifik) yang sama: kuota Google sudah reset, jadi hitungan hari lain dibuang.
         usedCount: (a.usedDay === todayKey ? (a.usedCount || 0) : 0),
         usedDay: todayKey
       });
@@ -3196,7 +2703,6 @@
     }
   })();
 
-  // ---- pulihkan log & data dari sesi sebelumnya ----
   (function restoreSession(){
     var savedLog = loadLogBuffer();
     if (savedLog.length){
@@ -3210,7 +2716,6 @@
       if (st.limitPerAccount >= 1){ limitPerAccount = st.limitPerAccount; el.limitPerAccountInput.value = limitPerAccount; limitAutoManaged = false; }
       lastRun = st.lastRun || null;
 
-      // baris yang statusnya "loading" berarti halaman tertutup/refresh di tengah upload: video MUNGKIN sudah terupload.
       var interrupted = 0;
       events.forEach(function(r){
         if (r.status === "loading"){ r.status = "gagal"; r.message = "Terputus (halaman refresh/ditutup). Cek manual di YouTube Studio sebelum upload ulang, video mungkin sudah masuk."; interrupted++; }
@@ -3218,7 +2723,7 @@
       var counts = { sukses: 0, gagal: 0, skip: 0, ready: 0 };
       events.forEach(function(r){ if (counts[r.status] !== undefined) counts[r.status]++; });
 
-      if (interrupted > 0) saveStateNow();   // tulis langsung (bukan ditunda) supaya status 'Terputus' tidak hilang kalau tab ditutup lagi
+      if (interrupted > 0) saveStateNow();
 
       var msg = "Sesi sebelumnya dipulihkan (" + fmtDateTime(st.savedAt) + "): " + events.length + " event, " +
                 counts.sukses + " sukses, " + counts.gagal + " gagal, " + counts.skip + " skip, " + counts.ready + " belum diupload.";
@@ -3245,9 +2750,6 @@
     }
   })();
 
-  // Perbarui sisa waktu token di kartu akun secara berkala (tidak saat upload berjalan, supaya layar tidak berkedip),
-  // DAN coba perpanjang token diam-diam untuk akun yang mepet/habis (jalan terus meski sedang bulk upload,
-  // karena justru saat itulah paling penting supaya proses tidak keputus).
   setInterval(function(){
     if (accounts.length === 0) return;
     if (!running && !pendingRelogin){
@@ -3272,7 +2774,6 @@
   refreshImageUi();
   if (appMode === "video" && !isRecorderSupported()) log("PERINGATAN: browser ini tidak mendukung MediaRecorder/captureStream, render video tidak akan jalan (iOS Safari lama). Pakai Chrome/Edge/Firefox, atau pakai mode Jadwal Live yang tidak butuh render video.", "error");
   initGsi();
-  refreshAccountsFromBackend();
 
 })();
 </script>
