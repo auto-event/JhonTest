@@ -811,6 +811,8 @@
     el.playlistWrap.style.display = playlist ? "" : "none";
     if (playlist){
       renderPlaylistAccountSelect();
+      el.modeNote.innerHTML = '<b>Mode Playlist.</b> Bikin playlist baru di channel kamu lalu isi dengan video &mdash; video kamu sendiri atau video publik orang lain yang sejenis. ' +
+        'Scroll ke bawah ke card <b>&ldquo;Bikin / Isi Playlist&rdquo;</b> untuk pilih akun, isi judul playlist, cari video by kata kunci, atau tempel link video manual.';
       return;
     }
     el.modeNote.innerHTML = live
