@@ -2669,6 +2669,16 @@
     renderPlaylistRows();
   }
 
+  // Format tanpa header (sama seperti tab Jadwal Live): kolom pertama = judul, kolom lain jadi deskripsi + hashtag.
+  // Dibaca pakai parser yang sama dengan tab live (parseHeaderlessRows); Date:/Time: tidak wajib untuk playlist.
+  function processPlaylistHeaderless(arrays, fileName){
+    var res = parseHeaderlessRows(arrays);
+    var privacy = (el.plPrivacySelect && el.plPrivacySelect.value) || "public";
+    var raw = res.rows.map(function(r){ return { title: r.title, description: r.description, privacy: privacy }; });
+    plLog("Format tanpa header terdeteksi (" + fileName + "): judul = kolom pertama, kolom lain jadi deskripsi playlist, privacy ikut pilihan \"Privacy Playlist\" (" + privacy + ").", "success");
+    processPlaylistRows(raw, fileName);
+  }
+
   function handlePlaylistFile(fileList){
     if (!fileList || !fileList.length) return;
     var file = fileList[0];
@@ -2676,7 +2686,11 @@
     if (ext !== "csv" && ext !== "xlsx" && ext !== "xls"){ showToast("Format harus .csv / .xlsx / .xls"); return; }
     if (ext === "csv"){
       var reader = new FileReader();
-      reader.onload = function(e){ processPlaylistRows(parseCsvText(e.target.result), file.name); };
+      reader.onload = function(e){
+        var records = parseCsvRecords(e.target.result);
+        if (records.length && !looksLikeHeaderRow(records[0])){ processPlaylistHeaderless(records, file.name); return; }
+        processPlaylistRows(parseCsvText(e.target.result), file.name);
+      };
       reader.readAsText(file);
     } else {
       loadSheetJs(function(ok){
@@ -2684,8 +2698,10 @@
         var reader = new FileReader();
         reader.onload = function(e){
           var data = new Uint8Array(e.target.result);
-          var wb = window.XLSX.read(data, { type: "array" });
+          var wb = window.XLSX.read(data, { type: "array", cellDates: true });
           var sheet = wb.Sheets[wb.SheetNames[0]];
+          var aoa = window.XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "", raw: false, blankrows: false });
+          if (aoa.length && !looksLikeHeaderRow(aoa[0])){ processPlaylistHeaderless(aoa, file.name); return; }
           var rows = window.XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
           processPlaylistRows(rows, file.name);
         };
