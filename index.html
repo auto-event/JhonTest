@@ -408,6 +408,17 @@
       </div>
 
       <div class="field" style="margin-top:14px;">
+        <label>Cari Video by Kata Kunci (opsional)</label>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="plSearchInput" placeholder="Contoh: highlight sepak bola">
+          <button class="btn-white" id="plSearchBtn" style="flex-shrink:0;">Cari</button>
+        </div>
+        <div class="small" style="color:var(--muted);margin-top:6px;">Pakai token akun yang dipilih di atas. Tiap pencarian &asymp; 100 unit kuota, maksimal 25 video publik per pencarian.</div>
+        <div id="plSearchResults" style="margin-top:10px;display:none;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;"></div>
+        <button class="btn-ghost" id="plAddSelectedBtn" style="width:100%;margin-top:10px;display:none;">+ Tambahkan yang Dicentang ke Daftar Link</button>
+      </div>
+
+      <div class="field" style="margin-top:14px;">
         <label>Daftar Link Video (satu link/ID per baris)</label>
         <textarea id="plVideoListInput" rows="8" style="width:100%;padding:10px;font-family:monospace;font-size:12px;" placeholder="https://www.youtube.com/watch?v=xxxxxxxxxxx&#10;https://youtu.be/yyyyyyyyyyy&#10;https://www.youtube.com/live/zzzzzzzzzzz"></textarea>
         <div class="small" style="color:var(--muted);margin-top:6px;" id="plVideoCountLabel">0 link terdeteksi</div>
@@ -691,6 +702,10 @@
     plPrivacySelect: document.getElementById("plPrivacySelect"),
     plVideoListInput: document.getElementById("plVideoListInput"),
     plVideoCountLabel: document.getElementById("plVideoCountLabel"),
+    plSearchInput: document.getElementById("plSearchInput"),
+    plSearchBtn: document.getElementById("plSearchBtn"),
+    plSearchResults: document.getElementById("plSearchResults"),
+    plAddSelectedBtn: document.getElementById("plAddSelectedBtn"),
     buildPlaylistBtn: document.getElementById("buildPlaylistBtn"),
     plProgressWrap: document.getElementById("plProgressWrap"),
     plProgressLabel: document.getElementById("plProgressLabel"),
@@ -2582,6 +2597,91 @@
     el.plVideoCountLabel.textContent = r.ids.length + " link terdeteksi" + (r.bad.length ? " (" + r.bad.length + " baris tidak dikenali)" : "");
   }
 
+  function ytSearchVideos(token, query, cb){
+    var url = "https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=25&q=" + encodeURIComponent(query);
+    fetch(url, { headers: { "Authorization": "Bearer " + token } }).then(function(r){
+      return r.text().then(function(t){
+        if (!r.ok){
+          var c = classifyApiError(r.status, t);
+          cb(c.quota ? "kuota habis" : "gagal cari (" + r.status + "): " + t.slice(0, 200), null);
+          return;
+        }
+        var data; try { data = JSON.parse(t); } catch (e){ data = {}; }
+        var items = (data.items || []).map(function(it){
+          return {
+            videoId: it.id && it.id.videoId,
+            title: it.snippet && it.snippet.title,
+            channelTitle: it.snippet && it.snippet.channelTitle,
+            thumb: it.snippet && it.snippet.thumbnails && (it.snippet.thumbnails.default || {}).url
+          };
+        }).filter(function(it){ return it.videoId; });
+        cb(null, items);
+      });
+    }).catch(function(e){ cb(e.message || String(e), null); });
+  }
+
+  function renderSearchResults(items){
+    if (!items.length){
+      el.plSearchResults.style.display = "none";
+      el.plAddSelectedBtn.style.display = "none";
+      showToast("Tidak ada hasil untuk kata kunci itu");
+      return;
+    }
+    el.plSearchResults.innerHTML = items.map(function(it, i){
+      return '<label style="display:flex;gap:10px;align-items:flex-start;padding:8px;border:1px solid var(--border,#333);border-radius:8px;cursor:pointer;">' +
+        '<input type="checkbox" class="plSearchChk" value="' + escapeHtml(it.videoId) + '" style="margin-top:4px;flex-shrink:0;">' +
+        (it.thumb ? '<img src="' + escapeHtml(it.thumb) + '" style="width:64px;height:48px;object-fit:cover;border-radius:4px;flex-shrink:0;">' : '') +
+        '<span style="min-width:0;"><div style="font-size:12px;font-weight:500;">' + escapeHtml(it.title || "(tanpa judul)") + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);">' + escapeHtml(it.channelTitle || "") + '</div></span>' +
+        '</label>';
+    }).join("");
+    el.plSearchResults.style.display = "flex";
+    el.plAddSelectedBtn.style.display = "block";
+  }
+
+  function runPlaylistSearch(){
+    var idx = el.plAccountSelect.value;
+    if (idx === "" || idx === null || !accounts[idx]){ showToast("Pilih akun dulu (dipakai buat token pencarian)"); return; }
+    var q = (el.plSearchInput.value || "").trim();
+    if (!q){ showToast("Isi kata kunci dulu"); return; }
+    var acc = accounts[idx];
+    el.plSearchBtn.disabled = true;
+    el.plSearchBtn.textContent = "Mencari...";
+    plLog("Mencari video: \"" + q + "\"...", "info");
+    ensureFreshToken(acc).then(function(token){
+      ytSearchVideos(token, q, function(err, items){
+        el.plSearchBtn.disabled = false;
+        el.plSearchBtn.textContent = "Cari";
+        if (err){ plLog("✗ Pencarian gagal: " + err, "error"); showToast("Pencarian gagal"); return; }
+        addClientQuotaUsage(acc.clientId, "live", 100);
+        plLog("✓ Ditemukan " + items.length + " video untuk \"" + q + "\".", "success");
+        renderSearchResults(items);
+      });
+    }).catch(function(e){
+      el.plSearchBtn.disabled = false;
+      el.plSearchBtn.textContent = "Cari";
+      plLog("✗ Token akun gagal diperbarui: " + e.message, "error");
+    });
+  }
+
+  function appendSelectedSearchResults(){
+    var boxes = el.plSearchResults.querySelectorAll(".plSearchChk:checked");
+    if (!boxes.length){ showToast("Belum ada yang dicentang"); return; }
+    var existing = (el.plVideoListInput.value || "").split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var existingIds = {};
+    existing.forEach(function(l){ var id = extractVideoId(l); if (id) existingIds[id] = true; });
+    var added = 0;
+    Array.prototype.forEach.call(boxes, function(b){
+      if (existingIds[b.value]) return;
+      existing.push("https://www.youtube.com/watch?v=" + b.value);
+      existingIds[b.value] = true;
+      added++;
+    });
+    el.plVideoListInput.value = existing.join("\n");
+    updatePlaylistVideoCount();
+    showToast(added + " video ditambahkan ke daftar" + (added < boxes.length ? " (" + (boxes.length - added) + " sudah ada)" : ""));
+  }
+
   function ytPlaylistInsert(token, title, desc, privacy, cb){
     fetch("https://www.googleapis.com/youtube/v3/playlists?part=snippet,status", {
       method: "POST",
@@ -3241,6 +3341,8 @@
   el.modeLiveBtn.addEventListener("click", function(){ setMode("live"); });
   el.modePlaylistBtn.addEventListener("click", function(){ setMode("playlist"); });
   el.buildPlaylistBtn.addEventListener("click", runPlaylistBuild);
+  el.plSearchBtn.addEventListener("click", runPlaylistSearch);
+  el.plAddSelectedBtn.addEventListener("click", appendSelectedSearchResults);
   el.plVideoListInput.addEventListener("input", updatePlaylistVideoCount);
   el.clearLogBtn2.addEventListener("click", function(){
     el.logBody2.innerHTML = "";
