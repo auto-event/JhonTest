@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>YT AutoChat Pro v2 - Batch Anti-Spam</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://accounts.google.com/gsi/client" async defer onload="gisReady=true"></script>
-<script src="https://apis.google.com/js/api.js" async defer onload="initGapi()"></script>
+<!-- Library Google dimuat via JS polling, TIDAK pakai onload attribute yang tidak reliable -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js" async defer></script>
 <style>
   * { word-wrap: break-word; overflow-wrap: break-word; -webkit-tap-highlight-color: transparent; }
   html, body { max-width: 100%; overflow-x: hidden; }
@@ -28,6 +29,7 @@
   .msg-row { display:flex; gap:6px; margin-bottom:8px; align-items:flex-start; }
   .msg-textarea { flex:1; min-width:0; }
   .del-btn { background:#27272a; padding:8px 10px; border-radius:8px; font-size:16px; flex-shrink:0; }
+  #libStatus { font-size:10px; padding:3px 8px; border-radius:9999px; font-weight:600; }
   @media (max-width: 480px) {
     body { padding: 8px; }
     .card { border-radius: 12px; }
@@ -49,7 +51,10 @@
       <p class="text-[10px] sm:text-xs text-zinc-400 truncate">Batch Mode • Multi Sender</p>
     </div>
   </div>
-  <div id="statusBadge" class="px-2 sm:px-3 py-1 rounded-full bg-zinc-800 text-[10px] sm:text-sm flex-shrink-0 whitespace-nowrap">⚪ Off</div>
+  <div class="flex flex-col items-end gap-1 flex-shrink-0">
+    <div id="statusBadge" class="px-2 sm:px-3 py-1 rounded-full bg-zinc-800 text-[10px] sm:text-sm whitespace-nowrap">⚪ Off</div>
+    <div id="libStatus" style="background:#3f3f46;color:#a1a1aa;">⏳ Loading libs...</div>
+  </div>
 </div>
 
 <!-- MULTI ACCOUNT -->
@@ -69,6 +74,7 @@
   <input id="clientIdInput" class="input mt-1 mb-2" placeholder="xxx.apps.googleusercontent.com" autocomplete="off" spellcheck="false">
   <div class="flex gap-2 mb-3 items-center flex-wrap">
     <button id="saveClientIdBtn" class="text-[11px] bg-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-700">💾 Simpan Client ID</button>
+    <button id="reloadLibsBtn" class="text-[11px] bg-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-700">🔄 Reload Library</button>
     <span id="clientIdSaved" class="text-[11px] text-green-400 hidden">✓ Tersimpan!</span>
   </div>
   <div class="warn-box">
@@ -110,7 +116,6 @@
     Pesan diambil dari daftar di bawah secara <b>rotasi global</b> (event 1 dapat pesan A,B; event 2 dapat pesan C,D; dst).
   </div>
 
-  <!-- STATS -->
   <div class="grid grid-cols-3 gap-2 mb-4">
     <div class="stat-box">
       <div class="text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-wide">Event</div>
@@ -126,7 +131,6 @@
     </div>
   </div>
 
-  <!-- SETTING -->
   <div class="grid grid-cols-1 gap-3 mb-4">
     <div>
       <label class="text-[11px] sm:text-xs text-zinc-400 font-bold block">KOMENTAR PER EVENT</label>
@@ -145,7 +149,6 @@
     </div>
   </div>
 
-  <!-- PESAN -->
   <label class="text-[11px] sm:text-xs text-zinc-400 font-bold block mb-2">💬 DAFTAR PESAN</label>
   <div id="batchMsgList"></div>
   <button id="addBatchMsg" class="mt-2 w-full py-2 bg-zinc-800 rounded-lg text-xs">+ Tambah Pesan</button>
@@ -153,7 +156,6 @@
     <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="shuffleMessages" checked> Acak urutan pesan saat start</label>
   </div>
 
-  <!-- PROGRESS -->
   <div id="batchProgress" class="hidden mt-4 p-3 sm:p-4 bg-black rounded-xl" style="border:1px solid #166534;">
     <div class="flex justify-between text-xs mb-2 gap-2 flex-wrap">
       <span class="text-green-400 font-bold">🔄 BERJALAN</span>
@@ -223,7 +225,9 @@ let liveChatId = null;
 let queue = [], qIdx = 0;
 let running = false, timer = null, seqIdx = 0, lastMsg = null, sentCount = 0, sending = false;
 let senderIdx = 0;
-let gisReady = false, gapiReadyPromise = null;
+let gisReady = false;
+let gapiReadyPromise = null;
+let libPolling = null;
 let csvData = [];
 let selectedVideos = new Set();
 let batchRunning = false, batchTimer = null;
@@ -244,9 +248,81 @@ function errInfo(e){
   const er = e && e.result && e.result.error;
   return { code: er ? er.code : null, reason: er && er.errors && er.errors[0] ? er.errors[0].reason : '', msg: er ? er.message : (e && e.message) || String(e) };
 }
-function setBadge(text, cls){ $('statusBadge').textContent = text; $('statusBadge').className = 'px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-sm flex-shrink-0 whitespace-nowrap ' + cls; }
+function setBadge(text, cls){ $('statusBadge').textContent = text; $('statusBadge').className = 'px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-sm whitespace-nowrap ' + cls; }
 function updateCounter(){ $('counter').textContent = `Terkirim: ${sentCount} • Kuota ≈ ${sentCount*20} unit`; }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function updateLibStatus(status, color, bg) {
+  const el = $('libStatus');
+  el.textContent = status;
+  el.style.color = color;
+  el.style.background = bg;
+}
+
+/* ---------- POLLING UNTUK LIBRARY GOOGLE (FIX UTAMA) ---------- */
+function startLibPolling() {
+  if (libPolling) return;
+  let tries = 0;
+  const maxTries = 150; // 15 detik (100ms interval)
+  
+  libPolling = setInterval(() => {
+    tries++;
+    const gisOk = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
+    const gapiOk = !!(window.gapi && window.gapi.load);
+    
+    if (gisOk) gisReady = true;
+    
+    // Update UI status
+    if (gisOk && gapiOk && gapiReadyPromise) {
+      updateLibStatus('✓ Libs Ready', '#86efac', '#14532d');
+      clearInterval(libPolling); libPolling = null;
+      log('Library Google siap digunakan', 'SUCCESS');
+      refreshButtons();
+      return;
+    }
+    
+    // Kalau gapi sudah ada tapi initGapi belum dipanggil → panggil
+    if (gapiOk && !gapiReadyPromise) {
+      updateLibStatus('⏳ Init GAPI...', '#fcd34d', '#78350f');
+      try { initGapi(); } catch(e) { log('initGapi error: ' + e.message, 'ERROR'); }
+    }
+    
+    // Update progress status
+    const gisStr = gisOk ? 'GIS✓' : 'GIS⏳';
+    const gapiStr = gapiOk ? 'GAPI✓' : 'GAPI⏳';
+    updateLibStatus(`${gisStr} ${gapiStr}`, '#fcd34d', '#78350f');
+    
+    if (tries >= maxTries) {
+      clearInterval(libPolling); libPolling = null;
+      updateLibStatus('✗ Libs Timeout', '#fca5a5', '#7f1d1d');
+      log('Library Google tidak termuat setelah 15 detik. Cek koneksi / matikan adblock / blokir script.', 'ERROR');
+      log('Klik "🔄 Reload Library" untuk coba lagi.', 'INFO');
+    }
+  }, 100);
+}
+
+// Reload library manual (kalau user kena timeout atau blocked)
+$('reloadLibsBtn').onclick = () => {
+  log('Reload library Google...', 'INFO');
+  gisReady = false;
+  gapiReadyPromise = null;
+  updateLibStatus('⏳ Reloading...', '#fcd34d', '#78350f');
+  
+  // Inject ulang script dengan cache buster
+  const bust = '?_=' + Date.now();
+  const s1 = document.createElement('script');
+  s1.src = 'https://accounts.google.com/gsi/client' + bust;
+  s1.async = true;
+  document.head.appendChild(s1);
+  
+  const s2 = document.createElement('script');
+  s2.src = 'https://apis.google.com/js/api.js' + bust;
+  s2.async = true;
+  document.head.appendChild(s2);
+  
+  if (libPolling) { clearInterval(libPolling); libPolling = null; }
+  setTimeout(startLibPolling, 200);
+};
 
 /* ---------- Account Logic ---------- */
 function isValid(a) { return a && Date.now() < a.expiresAt - 30000; }
@@ -333,7 +409,7 @@ function renderAccounts() {
   refreshButtons();
 }
 
-/* ---------- Save / Restore (FIX CLIENT ID PERMANEN) ---------- */
+/* ---------- Save / Restore ---------- */
 const KEY = 'ytac_state';
 const OLD_KEYS = ['ytac_state_v5','ytac_state_v4','ytac_state_v3','ytac_state_v2'];
 
@@ -397,7 +473,6 @@ document.addEventListener('input', saveState);
 document.addEventListener('change', saveState);
 document.addEventListener('click', () => setTimeout(saveState, 0));
 
-/* Tombol Simpan Client ID Manual */
 $('saveClientIdBtn').onclick = () => {
   const id = $('clientIdInput').value.trim();
   if (!id.endsWith('.apps.googleusercontent.com')) { log('Format Client ID salah', 'ERROR'); return; }
@@ -510,35 +585,70 @@ addBatchRow('💬 Drop komentar kalian di bawah ya guys!');
 addBatchRow('⭐ Semangat terus, terima kasih sudah hadir!');
 const getBatchMsgs = () => [...document.querySelectorAll('.batchMsgText')].map(x => x.value.trim()).filter(Boolean);
 
-/* ---------- GAPI ---------- */
+/* ---------- GAPI Init ---------- */
 function initGapi(){
+  if (gapiReadyPromise) return gapiReadyPromise;
   gapiReadyPromise = new Promise((resolve, reject) => {
     gapi.load('client', async () => {
       try {
         await gapi.client.init({});
         await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest');
         await gapi.client.load('https://www.googleapis.com/discovery/v1/apis/oauth2/v2/rest');
-        log('GAPI client siap');
+        log('GAPI client + YouTube API siap', 'SUCCESS');
         resolve();
-      } catch(e){ log('Gagal load GAPI: ' + errInfo(e).msg, 'ERROR'); reject(e); }
+      } catch(e){
+        log('Gagal load GAPI: ' + errInfo(e).msg, 'ERROR');
+        reject(e);
+      }
     });
   });
   gapiReadyPromise.catch(() => {});
+  return gapiReadyPromise;
 }
 
+/* ---------- ADD ACCOUNT (FIX UTAMA) ---------- */
 $('addAccountBtn').onclick = async () => {
   const clientId = $('clientIdInput').value.trim();
-  if (location.protocol === 'file:'){ log('OAuth tidak bisa via file://', 'ERROR'); return; }
-  if (!clientId.endsWith('.apps.googleusercontent.com')){ log('Client ID tidak valid', 'ERROR'); return; }
-  if (!gisReady || !gapiReadyPromise){ log('Library Google belum siap', 'ERROR'); return; }
-
-  // Simpan Client ID ke backup DULU sebelum buka popup
+  
+  // Validasi
+  if (location.protocol === 'file:'){ log('OAuth tidak bisa via file://. Pakai GitHub Pages/localhost.', 'ERROR'); return; }
+  if (!clientId.endsWith('.apps.googleusercontent.com')){ log('Client ID tidak valid (harus berakhir .apps.googleusercontent.com)', 'ERROR'); return; }
+  
+  // FIX: Polling untuk pastikan library siap (bukan cek langsung)
+  const gisOk = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
+  const gapiOk = !!(window.gapi && window.gapi.load);
+  
+  if (!gisOk || !gapiOk) {
+    log('Library Google belum siap. Status: ' + (gisOk ? 'GIS✓' : 'GIS⏳') + ' ' + (gapiOk ? 'GAPI✓' : 'GAPI⏳'), 'ERROR');
+    log('Tunggu beberapa detik, atau klik "🔄 Reload Library". Cek juga koneksi / adblock.', 'INFO');
+    // Auto-restart polling kalau mati
+    if (!libPolling) startLibPolling();
+    return;
+  }
+  
+  // Kalau gapi ada tapi initGapi belum dipanggil, panggil sekarang
+  if (!gapiReadyPromise) {
+    try { initGapi(); } catch(e) {}
+  }
+  
+  // Tunggu gapi.client fully ready
+  try {
+    if (gapiReadyPromise) {
+      log('Menunggu GAPI client siap...');
+      await gapiReadyPromise;
+    }
+  } catch(e) {
+    log('GAPI client gagal init: ' + e.message, 'ERROR');
+    return;
+  }
+  
+  // Simpan Client ID
   try {
     localStorage.setItem('ytac_clientId', clientId);
     saveState();
   } catch(e){}
 
-  log('Login akun baru...');
+  log('Membuka popup login Google...');
   const tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: clientId,
     scope: 'https://www.googleapis.com/auth/youtube.force-ssl openid email profile',
@@ -553,7 +663,8 @@ $('addAccountBtn').onclick = async () => {
       try {
         const ui = await gapi.client.oauth2.userinfo.get();
         email = ui.result.email; name = ui.result.name; picture = ui.result.picture;
-      } catch(e) {}
+      } catch(e) { log('Gagal ambil info user (lanjut)', 'INFO'); }
+      
       let myChannelId = null;
       try {
         const me = await gapi.client.youtube.channels.list({ part: 'id', mine: true });
@@ -576,7 +687,13 @@ $('addAccountBtn').onclick = async () => {
       }
       renderAccounts(); saveState();
     },
-    error_callback: err => log('Popup gagal: ' + (err.type || err.message), 'ERROR')
+    error_callback: err => {
+      const msg = err.type || err.message || 'Unknown';
+      log('Popup gagal/ditutup: ' + msg, 'ERROR');
+      if (msg === 'popup_closed' || msg === 'popup_failed_to_open') {
+        log('Tips: Pastikan popup tidak diblokir browser. Coba buka di Chrome/Safari terbaru.', 'INFO');
+      }
+    }
   });
   tokenClient.requestAccessToken();
 };
@@ -618,9 +735,7 @@ async function sendMessage(text, chatId = liveChatId){
   }
 }
 
-/* ============================================================
-   BATCH MODE
-   ============================================================ */
+/* ---------- BATCH MODE ---------- */
 $('startBatchBtn').onclick = async () => {
   if (batchRunning) return;
   const selected = [...selectedVideos];
@@ -745,9 +860,7 @@ $('stopBatchBtn').onclick = () => {
   batchStop();
 };
 
-/* ============================================================
-   LOOP MODE
-   ============================================================ */
+/* ---------- LOOP MODE ---------- */
 function pickMessage(msgs){
   if ($('randomCheck').checked && msgs.length > 1){
     let m; do { m = msgs[Math.floor(Math.random() * msgs.length)]; } while (m === lastMsg);
@@ -829,6 +942,8 @@ function refreshButtons(){
   $('startBtn').disabled = !hasSenders || !(rotateOn() ? queue.length : liveChatId) || running || batchRunning;
   $('loadQueueBtn').disabled = !getOwner();
   $('connectBtn').disabled = !accounts.some(a => isValid(a));
+  // Tombol "+ Akun" hanya disable saat bot berjalan, tidak terpengaruh library
+  $('addAccountBtn').disabled = running || batchRunning;
 }
 function renderQueue(){
   const el = $('queueList'); el.innerHTML = '';
@@ -867,11 +982,15 @@ function logoutAll(){
   log('Semua sesi dihapus');
 }
 
-/* ---------- Init ---------- */
+/* ---------- INIT ---------- */
 restoreState();
 updateStats();
 refreshButtons();
 updateCounter();
+
+// Mulai polling library Google
+log('Menunggu library Google...', 'INFO');
+startLibPolling();
 </script>
 </body>
 </html>
