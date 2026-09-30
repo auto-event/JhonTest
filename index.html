@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <title>YT AutoChat Pro v2 - Batch Anti-Spam</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Library Google dimuat via JS polling, TIDAK pakai onload attribute yang tidak reliable -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
 <style>
@@ -152,8 +151,9 @@
   <label class="text-[11px] sm:text-xs text-zinc-400 font-bold block mb-2">💬 DAFTAR PESAN</label>
   <div id="batchMsgList"></div>
   <button id="addBatchMsg" class="mt-2 w-full py-2 bg-zinc-800 rounded-lg text-xs">+ Tambah Pesan</button>
-  <div class="mt-3">
+  <div class="mt-3 flex flex-col gap-2">
     <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="shuffleMessages" checked> Acak urutan pesan saat start</label>
+    <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="verifyCheck" checked> ✅ Verifikasi pesan muncul di chat (anti-shadowban, +3.5s/pesan)</label>
   </div>
 
   <div id="batchProgress" class="hidden mt-4 p-3 sm:p-4 bg-black rounded-xl" style="border:1px solid #166534;">
@@ -237,7 +237,7 @@ $('originBox').textContent = location.origin === 'null' ? 'file:// (tidak diduku
 /* ---------- Helpers ---------- */
 function log(msg, type='INFO'){
   const el = $('logs');
-  const c = {ERROR:'text-red-400', SUCCESS:'text-green-400', SEND:'text-blue-400', BATCH:'text-yellow-300'}[type] || 'text-zinc-300';
+  const c = {ERROR:'text-red-400', SUCCESS:'text-green-400', SEND:'text-blue-400', BATCH:'text-yellow-300', VERIFY:'text-cyan-300'}[type] || 'text-zinc-300';
   const row = document.createElement('div'); row.className = 'mb-1 break-words';
   const t = document.createElement('span'); t.className = 'text-zinc-600'; t.textContent = new Date().toLocaleTimeString('id-ID') + ' ';
   const b = document.createElement('span'); b.className = 'bg-zinc-800 px-1 rounded text-[10px]'; b.textContent = type;
@@ -259,20 +259,19 @@ function updateLibStatus(status, color, bg) {
   el.style.background = bg;
 }
 
-/* ---------- POLLING UNTUK LIBRARY GOOGLE (FIX UTAMA) ---------- */
+/* ---------- POLLING LIBRARY GOOGLE ---------- */
 function startLibPolling() {
   if (libPolling) return;
   let tries = 0;
-  const maxTries = 150; // 15 detik (100ms interval)
-  
+  const maxTries = 150;
+
   libPolling = setInterval(() => {
     tries++;
     const gisOk = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
     const gapiOk = !!(window.gapi && window.gapi.load);
-    
+
     if (gisOk) gisReady = true;
-    
-    // Update UI status
+
     if (gisOk && gapiOk && gapiReadyPromise) {
       updateLibStatus('✓ Libs Ready', '#86efac', '#14532d');
       clearInterval(libPolling); libPolling = null;
@@ -280,46 +279,39 @@ function startLibPolling() {
       refreshButtons();
       return;
     }
-    
-    // Kalau gapi sudah ada tapi initGapi belum dipanggil → panggil
+
     if (gapiOk && !gapiReadyPromise) {
       updateLibStatus('⏳ Init GAPI...', '#fcd34d', '#78350f');
       try { initGapi(); } catch(e) { log('initGapi error: ' + e.message, 'ERROR'); }
     }
-    
-    // Update progress status
+
     const gisStr = gisOk ? 'GIS✓' : 'GIS⏳';
     const gapiStr = gapiOk ? 'GAPI✓' : 'GAPI⏳';
     updateLibStatus(`${gisStr} ${gapiStr}`, '#fcd34d', '#78350f');
-    
+
     if (tries >= maxTries) {
       clearInterval(libPolling); libPolling = null;
       updateLibStatus('✗ Libs Timeout', '#fca5a5', '#7f1d1d');
-      log('Library Google tidak termuat setelah 15 detik. Cek koneksi / matikan adblock / blokir script.', 'ERROR');
+      log('Library Google tidak termuat setelah 15 detik. Cek koneksi / matikan adblock.', 'ERROR');
       log('Klik "🔄 Reload Library" untuk coba lagi.', 'INFO');
     }
   }, 100);
 }
 
-// Reload library manual (kalau user kena timeout atau blocked)
 $('reloadLibsBtn').onclick = () => {
   log('Reload library Google...', 'INFO');
   gisReady = false;
   gapiReadyPromise = null;
   updateLibStatus('⏳ Reloading...', '#fcd34d', '#78350f');
-  
-  // Inject ulang script dengan cache buster
   const bust = '?_=' + Date.now();
   const s1 = document.createElement('script');
   s1.src = 'https://accounts.google.com/gsi/client' + bust;
   s1.async = true;
   document.head.appendChild(s1);
-  
   const s2 = document.createElement('script');
   s2.src = 'https://apis.google.com/js/api.js' + bust;
   s2.async = true;
   document.head.appendChild(s2);
-  
   if (libPolling) { clearInterval(libPolling); libPolling = null; }
   setTimeout(startLibPolling, 200);
 };
@@ -346,7 +338,7 @@ function renderAccounts() {
   }
   accounts.forEach(acc => {
     const row = document.createElement('div'); row.className = 'acc-row';
-    
+
     const ownerWrap = document.createElement('label');
     ownerWrap.className = 'flex flex-col items-center cursor-pointer'; ownerWrap.title = 'Jadikan Owner';
     const ownerRadio = document.createElement('input');
@@ -359,7 +351,7 @@ function renderAccounts() {
     };
     const ownerLbl = document.createElement('span'); ownerLbl.className = 'text-[8px] text-yellow-400 font-bold'; ownerLbl.textContent = 'OWNER';
     ownerWrap.append(ownerRadio, ownerLbl);
-    
+
     const senderWrap = document.createElement('label');
     senderWrap.className = 'flex flex-col items-center cursor-pointer'; senderWrap.title = 'Jadikan Sender';
     const senderCheck = document.createElement('input');
@@ -367,22 +359,33 @@ function renderAccounts() {
     senderCheck.onchange = () => { acc.isSender = senderCheck.checked; saveState(); renderAccounts(); };
     const senderLbl = document.createElement('span'); senderLbl.className = 'text-[8px] text-green-400 font-bold'; senderLbl.textContent = 'SEND';
     senderWrap.append(senderCheck, senderLbl);
-    
+
     const img = document.createElement('img');
     img.src = acc.picture || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><circle cx="12" cy="12" r="12" fill="%23555"/></svg>';
     img.className = 'w-7 h-7 rounded-full flex-shrink-0';
     img.onerror = () => { img.style.background = '#555'; img.removeAttribute('src'); };
-    
+
     const info = document.createElement('div'); info.className = 'flex-1 min-w-0';
     const expired = !isValid(acc);
     const ownerBadge = acc.isOwner ? '<span class="ml-1 px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-[8px] font-bold">OWNER</span>' : '';
     const senderBadge = acc.isSender ? '<span class="ml-1 px-1 py-0.5 rounded bg-green-500/20 text-green-300 text-[8px] font-bold">SENDER</span>' : '';
     const expBadge = expired ? '<span class="ml-1 px-1 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold">EXP</span>' : '';
+
+    const vOk = acc.verifyOk || 0;
+    const vMiss = acc.verifyMiss || 0;
+    let statsLine = `${escapeHtml(acc.email)} • ${acc.sentCount || 0} pesan`;
+    if (vOk > 0 || vMiss > 0) {
+      statsLine += ` • <span class="text-green-400">✓${vOk}</span>`;
+      if (vMiss > 0) statsLine += ` <span class="text-red-400">⚠${vMiss}</span>`;
+    } else {
+      statsLine += ` • ${(acc.sentCount || 0) * 20}/10000 kuota`;
+    }
+
     info.innerHTML = `
       <div class="text-[11px] font-bold truncate text-white">${escapeHtml(acc.name || acc.email)}${ownerBadge}${senderBadge}${expBadge}</div>
-      <div class="text-[9px] text-zinc-500 truncate">${escapeHtml(acc.email)} • ${acc.sentCount || 0} pesan • ${(acc.sentCount || 0) * 20}/10000 kuota</div>
+      <div class="text-[9px] text-zinc-500 truncate">${statsLine}</div>
     `;
-    
+
     const del = document.createElement('button');
     del.className = 'text-red-400 px-1 text-base flex-shrink-0'; del.textContent = '🗑';
     del.onclick = () => {
@@ -393,11 +396,11 @@ function renderAccounts() {
       renderAccounts(); saveState();
       log(`Akun ${acc.email} dihapus`, 'INFO');
     };
-    
+
     row.append(ownerWrap, senderWrap, img, info, del);
     el.appendChild(row);
   });
-  
+
   const senders = getSenders();
   const owner = getOwner();
   if (senders.length) {
@@ -424,6 +427,7 @@ function saveState(){
       gapSameEvent: $('gapSameEvent').value,
       gapBetweenEvents: $('gapBetweenEvents').value,
       shuffleMessages: $('shuffleMessages').checked,
+      verifyCheck: $('verifyCheck').checked,
       accounts, liveChatId, queue, rotate: $('rotateCheck').checked,
       selectedVideos: [...selectedVideos]
     }));
@@ -459,8 +463,17 @@ function restoreState(){
   if (s.gapSameEvent) $('gapSameEvent').value = s.gapSameEvent;
   if (s.gapBetweenEvents) $('gapBetweenEvents').value = s.gapBetweenEvents;
   if (typeof s.shuffleMessages === 'boolean') $('shuffleMessages').checked = s.shuffleMessages;
+  if (typeof s.verifyCheck === 'boolean') $('verifyCheck').checked = s.verifyCheck;
   if (s.accounts && s.accounts.length) {
-    accounts = s.accounts.map(a => ({ ...a, isSender: a.isSender !== false, isOwner: !!a.isOwner, sentCount: a.sentCount || 0 }));
+    accounts = s.accounts.map(a => ({
+      ...a,
+      isSender: a.isSender !== false,
+      isOwner: !!a.isOwner,
+      sentCount: a.sentCount || 0,
+      verifyOk: a.verifyOk || 0,
+      verifyMiss: a.verifyMiss || 0,
+      consecutiveMiss: a.consecutiveMiss || 0
+    }));
     if (s.liveChatId) { liveChatId = s.liveChatId; $('chatIdText').textContent = liveChatId; $('chatIdBox').classList.remove('hidden'); }
     if (s.queue && s.queue.length) { queue = s.queue; renderQueue(); }
     log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif`, 'SUCCESS');
@@ -606,32 +619,27 @@ function initGapi(){
   return gapiReadyPromise;
 }
 
-/* ---------- ADD ACCOUNT (FIX UTAMA) ---------- */
+/* ---------- ADD ACCOUNT ---------- */
 $('addAccountBtn').onclick = async () => {
   const clientId = $('clientIdInput').value.trim();
-  
-  // Validasi
+
   if (location.protocol === 'file:'){ log('OAuth tidak bisa via file://. Pakai GitHub Pages/localhost.', 'ERROR'); return; }
   if (!clientId.endsWith('.apps.googleusercontent.com')){ log('Client ID tidak valid (harus berakhir .apps.googleusercontent.com)', 'ERROR'); return; }
-  
-  // FIX: Polling untuk pastikan library siap (bukan cek langsung)
+
   const gisOk = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
   const gapiOk = !!(window.gapi && window.gapi.load);
-  
+
   if (!gisOk || !gapiOk) {
     log('Library Google belum siap. Status: ' + (gisOk ? 'GIS✓' : 'GIS⏳') + ' ' + (gapiOk ? 'GAPI✓' : 'GAPI⏳'), 'ERROR');
-    log('Tunggu beberapa detik, atau klik "🔄 Reload Library". Cek juga koneksi / adblock.', 'INFO');
-    // Auto-restart polling kalau mati
+    log('Tunggu beberapa detik, atau klik "🔄 Reload Library".', 'INFO');
     if (!libPolling) startLibPolling();
     return;
   }
-  
-  // Kalau gapi ada tapi initGapi belum dipanggil, panggil sekarang
+
   if (!gapiReadyPromise) {
     try { initGapi(); } catch(e) {}
   }
-  
-  // Tunggu gapi.client fully ready
+
   try {
     if (gapiReadyPromise) {
       log('Menunggu GAPI client siap...');
@@ -641,8 +649,7 @@ $('addAccountBtn').onclick = async () => {
     log('GAPI client gagal init: ' + e.message, 'ERROR');
     return;
   }
-  
-  // Simpan Client ID
+
   try {
     localStorage.setItem('ytac_clientId', clientId);
     saveState();
@@ -664,7 +671,7 @@ $('addAccountBtn').onclick = async () => {
         const ui = await gapi.client.oauth2.userinfo.get();
         email = ui.result.email; name = ui.result.name; picture = ui.result.picture;
       } catch(e) { log('Gagal ambil info user (lanjut)', 'INFO'); }
-      
+
       let myChannelId = null;
       try {
         const me = await gapi.client.youtube.channels.list({ part: 'id', mine: true });
@@ -681,7 +688,8 @@ $('addAccountBtn').onclick = async () => {
         const hasOwner = accounts.some(a => a.isOwner);
         accounts.push({
           id: accountId, email, name, picture, accessToken, expiresAt, myChannelId,
-          isSender: true, isOwner: isFirst || !hasOwner, sentCount: 0
+          isSender: true, isOwner: isFirst || !hasOwner, sentCount: 0,
+          verifyOk: 0, verifyMiss: 0, consecutiveMiss: 0
         });
         log(`Akun ${email}${isFirst || !hasOwner ? ' (Owner+Sender)' : ' (Sender)'}`, 'SUCCESS');
       }
@@ -698,22 +706,86 @@ $('addAccountBtn').onclick = async () => {
   tokenClient.requestAccessToken();
 };
 
+/* ---------- VERIFY FUNCTION (NEW) ---------- */
+async function verifySentMessage(sender, text, chatId, sentAtMs){
+  // Tunggu 3.5 detik agar YouTube proses & muncul di API
+  await new Promise(r => setTimeout(r, 3500));
+  try {
+    gapi.client.setToken({ access_token: sender.accessToken });
+    const res = await gapi.client.youtube.liveChatMessages.list({
+      liveChatId: chatId,
+      part: 'snippet,authorDetails',
+      maxResults: 100
+    });
+    const items = res.result.items || [];
+    const found = items.some(it => {
+      const t = (it.snippet && it.snippet.textMessageDetails && it.snippet.textMessageDetails.messageText) || '';
+      const auth = (it.authorDetails && it.authorDetails.displayName) || '';
+      const pub = it.snippet && it.snippet.publishedAt ? new Date(it.snippet.publishedAt).getTime() : 0;
+      if (t !== text) return false;
+      if (auth && sender.name && auth !== sender.name) return false;
+      if (pub > 0 && Math.abs(pub - sentAtMs) > 30000) return false;
+      return true;
+    });
+    return found;
+  } catch(e) {
+    // Kalau error (misal quota habis), return null = unknown, jangan tandai miss
+    return null;
+  }
+}
+
 /* ---------- Kirim ---------- */
 async function sendMessage(text, chatId = liveChatId){
   if (!chatId) return { ok:false, fatal:true };
   const sender = getNextSender();
   if (!sender) { log('Tidak ada Sender valid', 'ERROR'); return { ok:false, fatal:true }; }
   text = text.slice(0, 200);
+  const sentAt = Date.now();
+
   try {
     gapi.client.setToken({ access_token: sender.accessToken });
     await gapi.client.youtube.liveChatMessages.insert({
       part: 'snippet',
       resource: { snippet: { liveChatId: chatId, type: 'textMessageEvent', textMessageDetails: { messageText: text } } }
     });
+
     sender.sentCount = (sender.sentCount || 0) + 1;
-    sentCount++; updateCounter(); renderAccounts();
-    log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 50)}`, 'SUCCESS');
-    saveState();
+    sentCount++; updateCounter();
+
+    // VERIFY (kalau diaktifkan)
+    const verifyOn = $('verifyCheck') && $('verifyCheck').checked;
+    let verified = null;
+    if (verifyOn) {
+      log(`🔍 Memverifikasi "${text.slice(0, 25)}..."`, 'VERIFY');
+      verified = await verifySentMessage(sender, text, chatId, sentAt);
+    }
+
+    if (verified === false) {
+      // API OK tapi pesan TIDAK muncul → shadowban
+      sender.verifyMiss = (sender.verifyMiss || 0) + 1;
+      sender.consecutiveMiss = (sender.consecutiveMiss || 0) + 1;
+      log(`⚠ [${sender.email.split('@')[0]}] Pesan TIDAK muncul di chat! (miss ${sender.consecutiveMiss}/3)`, 'ERROR');
+      log(`   Kemungkinan: shadowban / akun baru / chat mode "subscribers only"`, 'INFO');
+
+      if (sender.consecutiveMiss >= 3) {
+        sender.isSender = false;
+        log(`🚫 ${sender.email} dinonaktifkan otomatis (3x shadowban). Sender lain akan lanjut.`, 'ERROR');
+        renderAccounts(); saveState();
+        if (getSenders().length === 0) {
+          log('Semua Sender habis/dinonaktifkan. Bot berhenti.', 'ERROR');
+          return { ok:false, fatal:true };
+        }
+      }
+    } else if (verified === true) {
+      sender.verifyOk = (sender.verifyOk || 0) + 1;
+      sender.consecutiveMiss = 0;
+      log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)} ✓verif`, 'SUCCESS');
+    } else {
+      // verified === null → tidak bisa verify (misal quota verify habis)
+      log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)}`, 'SUCCESS');
+    }
+
+    renderAccounts(); saveState();
     return { ok:true };
   } catch(e){
     const { code, reason, msg } = errInfo(e);
@@ -743,12 +815,12 @@ $('startBatchBtn').onclick = async () => {
   if (!getSenders().length) { log('Belum ada Sender aktif', 'ERROR'); return; }
   const msgs = getBatchMsgs();
   if (!msgs.length) { log('Daftar pesan kosong', 'ERROR'); return; }
-  
+
   const commentsPerEvent = Math.max(1, parseInt($('commentsPerEvent').value) || 1);
   const gapSame = Math.max(5, parseInt($('gapSameEvent').value) || 15) * 1000;
   const gapBetween = Math.max(5, parseInt($('gapBetweenEvents').value) || 30) * 1000;
   const shuffle = $('shuffleMessages').checked;
-  
+
   let msgPool = [...msgs];
   if (shuffle) {
     for (let i = msgPool.length - 1; i > 0; i--) {
@@ -757,19 +829,19 @@ $('startBatchBtn').onclick = async () => {
     }
   }
   const totalMessages = selected.length * commentsPerEvent;
-  
+
   batchRunning = true;
   $('startBatchBtn').disabled = true;
   $('stopBatchBtn').disabled = false;
   $('addAccountBtn').disabled = true;
   $('addBatchMsg').disabled = true;
   $('batchProgress').classList.remove('hidden');
-  
+
   log(`🚀 BATCH START: ${selected.length} event × ${commentsPerEvent} = ${totalMessages} pesan`, 'BATCH');
-  
+
   const fetchAcc = getOwner() || getSenders()[0];
   gapi.client.setToken({ access_token: fetchAcc.accessToken });
-  
+
   let targets = [];
   try {
     for (let i = 0; i < selected.length; i += 50) {
@@ -785,12 +857,12 @@ $('startBatchBtn').onclick = async () => {
       }
     }
   } catch(e) { log('Gagal ambil LiveChatId: ' + errInfo(e).msg, 'ERROR'); batchStop(); return; }
-  
+
   if (!targets.length) { log('Tidak ada target valid', 'ERROR'); batchStop(); return; }
-  
+
   const realTotal = targets.length * commentsPerEvent;
   log(`✓ ${targets.length} event valid → total ${realTotal} pesan`, 'BATCH');
-  
+
   const updateProgress = (evI, cmtI, gI, title, msg) => {
     $('batchProgressText').textContent = `${gI} / ${realTotal}`;
     $('batchProgressFill').style.width = `${(gI / realTotal) * 100}%`;
@@ -798,29 +870,29 @@ $('startBatchBtn').onclick = async () => {
     $('batchCurrentComment').textContent = `${cmtI}/${commentsPerEvent}`;
     if (msg) $('batchCurrentMsg').textContent = `"${msg.slice(0, 70)}${msg.length > 70 ? '...' : ''}"`;
   };
-  
+
   let globalIdx = 0, evIdx = 0, cmtIdx = 0;
-  
+
   const sendNext = async () => {
     if (!batchRunning) { log('⏹ Batch dihentikan', 'BATCH'); batchStop(); return; }
     if (evIdx >= targets.length) {
       log(`🎉 SELESAI! ${realTotal} pesan terkirim ke ${targets.length} event. BOT STOP.`, 'SUCCESS');
       batchStop(); return;
     }
-    
+
     const ev = targets[evIdx];
     const msg = msgPool[globalIdx % msgPool.length];
     updateProgress(evIdx, cmtIdx + 1, globalIdx, ev.title, msg);
     log(`📤 [Ev ${evIdx + 1}/${targets.length}] Komentar ${cmtIdx + 1}/${commentsPerEvent}`, 'BATCH');
-    
+
     const r = await sendMessage(msg, ev.chatId);
     globalIdx++; cmtIdx++;
-    
+
     if (!batchRunning) { log('⏹ Dibatalkan', 'BATCH'); batchStop(); return; }
     if (r.fatal) { log('❌ Fatal: Sender habis. Stop.', 'ERROR'); batchStop(); return; }
-    
+
     updateProgress(evIdx, cmtIdx, globalIdx, ev.title, null);
-    
+
     let nextDelay;
     if (cmtIdx >= commentsPerEvent) {
       evIdx++; cmtIdx = 0;
@@ -829,15 +901,15 @@ $('startBatchBtn').onclick = async () => {
     } else {
       nextDelay = gapSame;
     }
-    
+
     if (evIdx >= targets.length) {
       log(`🎉 SELESAI! ${realTotal} pesan terkirim. BOT STOP otomatis.`, 'SUCCESS');
       batchStop(); return;
     }
-    
+
     batchTimer = setTimeout(sendNext, nextDelay);
   };
-  
+
   batchTimer = setTimeout(sendNext, 2000);
 };
 
@@ -942,7 +1014,6 @@ function refreshButtons(){
   $('startBtn').disabled = !hasSenders || !(rotateOn() ? queue.length : liveChatId) || running || batchRunning;
   $('loadQueueBtn').disabled = !getOwner();
   $('connectBtn').disabled = !accounts.some(a => isValid(a));
-  // Tombol "+ Akun" hanya disable saat bot berjalan, tidak terpengaruh library
   $('addAccountBtn').disabled = running || batchRunning;
 }
 function renderQueue(){
@@ -987,8 +1058,6 @@ restoreState();
 updateStats();
 refreshButtons();
 updateCounter();
-
-// Mulai polling library Google
 log('Menunggu library Google...', 'INFO');
 startLibPolling();
 </script>
