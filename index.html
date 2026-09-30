@@ -796,7 +796,7 @@ $('addAccountBtn').onclick = async () => {
   tokenClient.requestAccessToken();
 };
 
-/* ---------- VERIFY FUNCTION (FIX: normalize emoji, no auto-disable) ---------- */
+/* ---------- VERIFY FUNCTION (normalize emoji, no auto-disable) ---------- */
 function normalizeForCompare(s){
   return String(s || '')
     .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, '')
@@ -805,11 +805,9 @@ function normalizeForCompare(s){
 }
 
 async function verifySentMessage(sender, text, chatId, sentAtMs){
-  // Ambil 20 karakter alfanumerik pertama untuk dibandingkan (buang emoji)
   const needle = normalizeForCompare(text).slice(0, 20);
-  if (!needle) return null; // Kalau text cuma emoji, skip verify
+  if (!needle) return null;
 
-  // Retry 3x: 5s, 10s, 15s (total max 30s)
   const delays = [5000, 10000, 15000];
 
   for (let attempt = 0; attempt < delays.length; attempt++) {
@@ -827,7 +825,7 @@ async function verifySentMessage(sender, text, chatId, sentAtMs){
       const found = items.some(it => {
         const t = (it.snippet && it.snippet.textMessageDetails && it.snippet.textMessageDetails.messageText) || '';
         const pub = it.snippet && it.snippet.publishedAt ? new Date(it.snippet.publishedAt).getTime() : 0;
-        if (pub > 0 && Math.abs(pub - sentAtMs) > 180000) return false; // toleransi 3 menit
+        if (pub > 0 && Math.abs(pub - sentAtMs) > 180000) return false;
         const hay = normalizeForCompare(t);
         return hay.includes(needle);
       });
@@ -876,7 +874,7 @@ async function sendMessage(text, chatId = liveChatId){
       sender.verifyMiss = (sender.verifyMiss || 0) + 1;
       log(`⚠ [${sender.email.split('@')[0]}] Verify tidak menemukan pesan (kemungkinan false alarm emoji).`, 'ERROR');
       log(`   Pesan SUDAH terkirim lewat API. Cek manual di YouTube.`, 'INFO');
-      // TIDAK auto-disable! Biarkan user decide.
+      // TIDAK auto-disable
     } else if (verified === true) {
       sender.verifyOk = (sender.verifyOk || 0) + 1;
       log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)} ✓verif`, 'SUCCESS');
@@ -982,24 +980,19 @@ $('startBatchBtn').onclick = async () => {
         const d = it.liveStreamingDetails || {};
         if (!d.activeLiveChatId) { log(`⚠ Skip ${it.id}: chat tidak aktif`, 'ERROR'); continue; }
 
-        const isLiveNow = !!d.actualStartTime && !d.actualEndTime;
-        const isUpcoming = !!d.scheduledStartTime && !d.actualStartTime;
-        const isEnded = !!d.actualEndTime;
-
-        if (isUpcoming) {
-          log(`🚫 SKIP "${it.snippet.title.slice(0, 40)}" — BELUM LIVE`, 'ERROR');
-          log(`   Jadwal: ${d.scheduledStartTime}`, 'INFO');
-          continue;
-        }
-        if (isEnded) {
+        // Skip HANYA kalau sudah benar-benar berakhir
+        if (d.actualEndTime) {
           log(`🚫 SKIP "${it.snippet.title.slice(0, 40)}" (sudah berakhir)`, 'ERROR');
           continue;
         }
-        if (!isLiveNow) {
-          log(`⚠ "${it.snippet.title.slice(0, 40)}" status tidak jelas, dilewati`, 'ERROR');
-          continue;
-        }
 
+        // Tentukan status untuk info saja (tidak untuk skip)
+        let statusLabel = 'LIVE';
+        if (d.actualStartTime) statusLabel = 'LIVE';
+        else if (d.scheduledStartTime) statusLabel = `PRE-LIVE (jadwal ${new Date(d.scheduledStartTime).toLocaleString('id-ID')})`;
+        else statusLabel = 'LIVE';
+
+        log(`✓ "${it.snippet.title.slice(0, 40)}" — ${statusLabel}`, 'SUCCESS');
         targets.push({ videoId: it.id, title: it.snippet.title, chatId: d.activeLiveChatId });
       }
     }
@@ -1160,22 +1153,26 @@ $('connectBtn').onclick = async () => {
     if (!item){ log('Video tidak ditemukan', 'ERROR'); return; }
     const d = item.liveStreamingDetails || {};
     if (!d.activeLiveChatId){ log('Live chat tidak aktif', 'ERROR'); return; }
-    const isLiveNow = !!d.actualStartTime && !d.actualEndTime;
-    const isUpcoming = !!d.scheduledStartTime && !d.actualStartTime;
-    if (isUpcoming) {
-      log('⚠ Video BELUM LIVE (Premiere/Scheduled). Live chat belum berjalan.', 'ERROR');
-      log(`   Jadwal: ${d.scheduledStartTime}`, 'INFO');
+
+    // Skip hanya kalau sudah berakhir
+    if (d.actualEndTime) {
+      log('⚠ Video sudah berakhir.', 'ERROR');
       return;
     }
-    if (!isLiveNow) {
-      log('⚠ Video tidak dalam status LIVE. Batalkan.', 'ERROR');
-      return;
-    }
+
     liveChatId = d.activeLiveChatId;
     $('chatIdText').textContent = liveChatId;
     $('chatIdBox').classList.remove('hidden');
     refreshButtons();
-    log(`✓ Video LIVE • Started: ${new Date(d.actualStartTime).toLocaleString('id-ID')}`, 'SUCCESS');
+
+    if (d.actualStartTime) {
+      log(`✓ Video LIVE • Started: ${new Date(d.actualStartTime).toLocaleString('id-ID')}`, 'SUCCESS');
+    } else if (d.scheduledStartTime) {
+      log(`✓ PRE-LIVE • Jadwal mulai: ${new Date(d.scheduledStartTime).toLocaleString('id-ID')}`, 'SUCCESS');
+      log(`   Chat sudah aktif, bisa dikirimi pesan.`, 'INFO');
+    } else {
+      log(`✓ Video LIVE`, 'SUCCESS');
+    }
     log('LiveChatId: ' + liveChatId, 'SUCCESS');
   } catch(e) {
     const info = errInfo(e);
