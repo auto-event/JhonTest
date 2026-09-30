@@ -157,7 +157,7 @@
   <button id="addBatchMsg" class="mt-2 w-full py-2 bg-zinc-800 rounded-lg text-xs">+ Tambah Pesan</button>
   <div class="mt-3 flex flex-col gap-2">
     <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="shuffleMessages" checked> Acak urutan pesan saat start</label>
-    <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="verifyCheck" checked> ✅ Verifikasi pesan muncul di chat (anti-shadowban, +3.5s/pesan)</label>
+    <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="verifyCheck"> ✅ Verifikasi pesan (opsional — kadang false alarm, default OFF)</label>
   </div>
 
   <div id="batchProgress" class="hidden mt-4 p-3 sm:p-4 bg-black rounded-xl" style="border:1px solid #166534;">
@@ -382,6 +382,8 @@ function renderAccounts() {
     const ownerBadge = acc.isOwner ? '<span class="ml-1 px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-[8px] font-bold">OWNER</span>' : '';
     const senderBadge = acc.isSender ? '<span class="ml-1 px-1 py-0.5 rounded bg-green-500/20 text-green-300 text-[8px] font-bold">SENDER</span>' : '';
     const expBadge = expired ? '<span class="ml-1 px-1 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold">TOKEN EXPIRED</span>' : '';
+    const isPageAcc = acc.email && acc.email.includes('@pages.plusgoogle.com');
+    const pageBadge = isPageAcc ? '<span class="ml-1 px-1 py-0.5 rounded bg-orange-700 text-white text-[8px] font-bold" title="Akun Google Pages - kadang di-shadowban YouTube">PAGE</span>' : '';
 
     const vOk = acc.verifyOk || 0;
     const vMiss = acc.verifyMiss || 0;
@@ -393,15 +395,16 @@ function renderAccounts() {
       if (vOk > 0 || vMiss > 0) {
         statsLine += ` • <span class="text-green-400">✓${vOk}</span>`;
         if (vMiss > 0) statsLine += ` <span class="text-red-400">⚠${vMiss}</span>`;
+      } else {
+        statsLine += ` • ${(acc.sentCount || 0) * 20}/10000 kuota`;
       }
     }
 
     info.innerHTML = `
-      <div class="text-[11px] font-bold truncate text-white">${escapeHtml(acc.name || acc.email)}${ownerBadge}${senderBadge}${expBadge}</div>
+      <div class="text-[11px] font-bold truncate text-white">${escapeHtml(acc.name || acc.email)}${ownerBadge}${senderBadge}${expBadge}${pageBadge}</div>
       <div class="text-[9px] text-zinc-500 truncate">${statsLine}</div>
     `;
 
-    // Tombol refresh untuk akun expired
     let refreshBtn = null;
     if (expired) {
       refreshBtn = document.createElement('button');
@@ -462,7 +465,6 @@ async function reLoginAccount(acc){
       acc.expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
       gapi.client.setToken({ access_token: acc.accessToken });
 
-      // Update nama & channel ID (kalau berubah)
       try {
         const ui = await gapi.client.oauth2.userinfo.get();
         acc.email = ui.result.email;
@@ -488,13 +490,11 @@ $('refreshAllBtn').onclick = () => {
   const stale = accounts.filter(a => !isValid(a));
   if (!stale.length) { log('Semua token masih valid, tidak perlu refresh', 'INFO'); return; }
   log(`🔑 Perlu refresh ${stale.length} akun. Akan dibuka popup berurutan...`, 'INFO');
-  // Re-login satu per satu dengan delay (biar popup tidak diblokir)
   let i = 0;
   const next = () => {
     if (i >= stale.length) { log('✓ Semua token selesai di-refresh', 'SUCCESS'); return; }
     const acc = stale[i]; i++;
     reLoginAccount(acc);
-    // Delay 8 detik sebelum login berikutnya
     setTimeout(next, 8000);
   };
   next();
@@ -567,7 +567,7 @@ function restoreState(){
     const stale = accounts.filter(a => !isValid(a)).length;
     if (stale > 0) {
       log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif, ⚠ ${stale} token expired`, 'INFO');
-      log(`⚠ ${stale} akun perlu login ulang. Klik tombol 🔑 di baris akun yang merah, atau "Refresh Semua Token".`, 'ERROR');
+      log(`⚠ ${stale} akun perlu login ulang. Klik tombol 🔑 di baris akun yang merah.`, 'ERROR');
     } else {
       log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif`, 'SUCCESS');
     }
@@ -796,36 +796,45 @@ $('addAccountBtn').onclick = async () => {
   tokenClient.requestAccessToken();
 };
 
-/* ---------- VERIFY FUNCTION ---------- */
+/* ---------- VERIFY FUNCTION (FIX: longgar + retry) ---------- */
 async function verifySentMessage(sender, text, chatId, sentAtMs){
-  await new Promise(r => setTimeout(r, 3500));
-  try {
-    gapi.client.setToken({ access_token: sender.accessToken });
-    const res = await gapi.client.youtube.liveChatMessages.list({
-      liveChatId: chatId,
-      part: 'snippet,authorDetails',
-      maxResults: 100
-    });
-    const items = res.result.items || [];
-    const found = items.some(it => {
-      const t = (it.snippet && it.snippet.textMessageDetails && it.snippet.textMessageDetails.messageText) || '';
-      const auth = (it.authorDetails && it.authorDetails.displayName) || '';
-      const pub = it.snippet && it.snippet.publishedAt ? new Date(it.snippet.publishedAt).getTime() : 0;
-      if (t !== text) return false;
-      if (auth && sender.name && auth !== sender.name) return false;
-      if (pub > 0 && Math.abs(pub - sentAtMs) > 30000) return false;
-      return true;
-    });
-    return found;
-  } catch(e) {
-    const info = errInfo(e);
-    if (isAuthError(info)) {
-      log(`⚠ Verify gagal: token ${sender.email.split('@')[0]} sudah tidak valid`, 'ERROR');
-      sender.expiresAt = 0;
-      renderAccounts(); saveState();
+  // Retry 3x dengan delay makin panjang: 5s → 10s → 15s (total max 30s)
+  const delays = [5000, 10000, 15000];
+
+  for (let attempt = 0; attempt < delays.length; attempt++) {
+    await new Promise(r => setTimeout(r, delays[attempt]));
+
+    try {
+      gapi.client.setToken({ access_token: sender.accessToken });
+      const res = await gapi.client.youtube.liveChatMessages.list({
+        liveChatId: chatId,
+        part: 'snippet,authorDetails',
+        maxResults: 200
+      });
+      const items = res.result.items || [];
+
+      // LONGGAR: cek TEXT match saja. Abaikan nama author (bisa beda antara Google name vs Channel name)
+      const found = items.some(it => {
+        const t = (it.snippet && it.snippet.textMessageDetails && it.snippet.textMessageDetails.messageText) || '';
+        const pub = it.snippet && it.snippet.publishedAt ? new Date(it.snippet.publishedAt).getTime() : 0;
+        if (t !== text) return false;
+        if (pub > 0 && Math.abs(pub - sentAtMs) > 120000) return false; // toleransi 2 menit
+        return true;
+      });
+
+      if (found) return true;
+    } catch(e) {
+      const info = errInfo(e);
+      if (isAuthError(info)) {
+        log(`⚠ Verify gagal: token ${sender.email.split('@')[0]} sudah tidak valid`, 'ERROR');
+        sender.expiresAt = 0;
+        renderAccounts(); saveState();
+        return null;
+      }
+      return null;
     }
-    return null;
   }
+  return false;
 }
 
 /* ---------- Kirim ---------- */
@@ -856,12 +865,11 @@ async function sendMessage(text, chatId = liveChatId){
     if (verified === false) {
       sender.verifyMiss = (sender.verifyMiss || 0) + 1;
       sender.consecutiveMiss = (sender.consecutiveMiss || 0) + 1;
-      log(`⚠ [${sender.email.split('@')[0]}] Pesan TIDAK muncul di chat! (miss ${sender.consecutiveMiss}/3)`, 'ERROR');
-      log(`   Kemungkinan: shadowban / akun baru / chat "subscribers only"`, 'INFO');
+      log(`⚠ [${sender.email.split('@')[0]}] Verify miss (${sender.consecutiveMiss}/5) — cek manual di HP`, 'ERROR');
 
-      if (sender.consecutiveMiss >= 3) {
+      if (sender.consecutiveMiss >= 5) {
         sender.isSender = false;
-        log(`🚫 ${sender.email} dinonaktifkan otomatis (3x shadowban). Sender lain akan lanjut.`, 'ERROR');
+        log(`🚫 ${sender.email} dinonaktifkan otomatis (5x verify miss). Sender lain akan lanjut.`, 'ERROR');
         renderAccounts(); saveState();
         if (getSenders().length === 0) {
           log('Semua Sender habis. Bot berhenti.', 'ERROR');
@@ -882,9 +890,8 @@ async function sendMessage(text, chatId = liveChatId){
     const info = errInfo(e);
     log(`✗ [${sender.email.split('@')[0]}] ${info.code || '-'} ${info.reason}: ${info.msg.slice(0, 60)}`, 'ERROR');
 
-    // === HANDLE 401 (token expired) ===
     if (isAuthError(info)) {
-      sender.expiresAt = 0; // invalidate
+      sender.expiresAt = 0;
       log(`🔑 Token ${sender.email} kadaluwarsa. Akun ditandai perlu login ulang.`, 'ERROR');
       renderAccounts(); saveState();
       if (getSenders().length > 0) {
@@ -914,7 +921,6 @@ $('startBatchBtn').onclick = async () => {
   const msgs = getBatchMsgs();
   if (!msgs.length) { log('Daftar pesan kosong', 'ERROR'); return; }
 
-  // === PREFLIGHT: cek apakah Owner (atau fallback) valid & token OK ===
   const fetchAcc = getOwner() || getSenders()[0];
   if (!fetchAcc) {
     log('❌ Tidak ada akun valid. Login ulang dulu.', 'ERROR');
@@ -925,20 +931,18 @@ $('startBatchBtn').onclick = async () => {
     renderAccounts();
     return;
   }
-  // Test call kecil untuk pastikan token masih valid di Google
   try {
     gapi.client.setToken({ access_token: fetchAcc.accessToken });
     await gapi.client.youtube.videos.list({ part: 'id', id: 'dQw4w9WgXcQ' });
   } catch(e) {
     const info = errInfo(e);
     if (isAuthError(info)) {
-      log(`❌ Token ${fetchAcc.email} TIDAK VALID di Google (meskipun localStorage bilang masih valid).`, 'ERROR');
+      log(`❌ Token ${fetchAcc.email} TIDAK VALID di Google.`, 'ERROR');
       log(`   Solusi: Klik tombol 🔑 di baris ${fetchAcc.email} untuk login ulang.`, 'INFO');
       fetchAcc.expiresAt = 0;
       renderAccounts(); saveState();
       return;
     }
-    // Error lain (bukan auth) - lanjut saja
   }
 
   const commentsPerEvent = Math.max(1, parseInt($('commentsPerEvent').value) || 1);
@@ -977,6 +981,25 @@ $('startBatchBtn').onclick = async () => {
       for (const it of res.result.items || []) {
         const d = it.liveStreamingDetails || {};
         if (!d.activeLiveChatId) { log(`⚠ Skip ${it.id}: chat tidak aktif`, 'ERROR'); continue; }
+
+        const isLiveNow = !!d.actualStartTime && !d.actualEndTime;
+        const isUpcoming = !!d.scheduledStartTime && !d.actualStartTime;
+        const isEnded = !!d.actualEndTime;
+
+        if (isUpcoming) {
+          log(`🚫 SKIP "${it.snippet.title.slice(0, 40)}" — BELUM LIVE`, 'ERROR');
+          log(`   Jadwal: ${d.scheduledStartTime}`, 'INFO');
+          continue;
+        }
+        if (isEnded) {
+          log(`🚫 SKIP "${it.snippet.title.slice(0, 40)}" (sudah berakhir)`, 'ERROR');
+          continue;
+        }
+        if (!isLiveNow) {
+          log(`⚠ "${it.snippet.title.slice(0, 40)}" status tidak jelas, dilewati`, 'ERROR');
+          continue;
+        }
+
         targets.push({ videoId: it.id, title: it.snippet.title, chatId: d.activeLiveChatId });
       }
     }
@@ -1137,10 +1160,22 @@ $('connectBtn').onclick = async () => {
     if (!item){ log('Video tidak ditemukan', 'ERROR'); return; }
     const d = item.liveStreamingDetails || {};
     if (!d.activeLiveChatId){ log('Live chat tidak aktif', 'ERROR'); return; }
+    const isLiveNow = !!d.actualStartTime && !d.actualEndTime;
+    const isUpcoming = !!d.scheduledStartTime && !d.actualStartTime;
+    if (isUpcoming) {
+      log('⚠ Video BELUM LIVE (Premiere/Scheduled). Live chat belum berjalan.', 'ERROR');
+      log(`   Jadwal: ${d.scheduledStartTime}`, 'INFO');
+      return;
+    }
+    if (!isLiveNow) {
+      log('⚠ Video tidak dalam status LIVE. Batalkan.', 'ERROR');
+      return;
+    }
     liveChatId = d.activeLiveChatId;
     $('chatIdText').textContent = liveChatId;
     $('chatIdBox').classList.remove('hidden');
     refreshButtons();
+    log(`✓ Video LIVE • Started: ${new Date(d.actualStartTime).toLocaleString('id-ID')}`, 'SUCCESS');
     log('LiveChatId: ' + liveChatId, 'SUCCESS');
   } catch(e) {
     const info = errInfo(e);
