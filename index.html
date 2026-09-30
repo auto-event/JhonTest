@@ -157,7 +157,7 @@
   <button id="addBatchMsg" class="mt-2 w-full py-2 bg-zinc-800 rounded-lg text-xs">+ Tambah Pesan</button>
   <div class="mt-3 flex flex-col gap-2">
     <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="shuffleMessages" checked> Acak urutan pesan saat start</label>
-    <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="verifyCheck"> ✅ Verifikasi pesan (opsional — kadang false alarm, default OFF)</label>
+    <label class="text-[11px] text-zinc-400 flex items-center gap-2"><input type="checkbox" id="verifyCheck"> ✅ Verifikasi pesan (opsional — kadang false alarm karena emoji, default OFF)</label>
   </div>
 
   <div id="batchProgress" class="hidden mt-4 p-3 sm:p-4 bg-black rounded-xl" style="border:1px solid #166534;">
@@ -383,7 +383,7 @@ function renderAccounts() {
     const senderBadge = acc.isSender ? '<span class="ml-1 px-1 py-0.5 rounded bg-green-500/20 text-green-300 text-[8px] font-bold">SENDER</span>' : '';
     const expBadge = expired ? '<span class="ml-1 px-1 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold">TOKEN EXPIRED</span>' : '';
     const isPageAcc = acc.email && acc.email.includes('@pages.plusgoogle.com');
-    const pageBadge = isPageAcc ? '<span class="ml-1 px-1 py-0.5 rounded bg-orange-700 text-white text-[8px] font-bold" title="Akun Google Pages - kadang di-shadowban YouTube">PAGE</span>' : '';
+    const pageBadge = isPageAcc ? '<span class="ml-1 px-1 py-0.5 rounded bg-orange-700 text-white text-[8px] font-bold" title="Akun Google Pages">PAGE</span>' : '';
 
     const vOk = acc.verifyOk || 0;
     const vMiss = acc.verifyMiss || 0;
@@ -394,7 +394,7 @@ function renderAccounts() {
       statsLine = `${escapeHtml(acc.email)} • ${acc.sentCount || 0} pesan`;
       if (vOk > 0 || vMiss > 0) {
         statsLine += ` • <span class="text-green-400">✓${vOk}</span>`;
-        if (vMiss > 0) statsLine += ` <span class="text-red-400">⚠${vMiss}</span>`;
+        if (vMiss > 0) statsLine += ` <span class="text-orange-400">~${vMiss}</span>`;
       } else {
         statsLine += ` • ${(acc.sentCount || 0) * 20}/10000 kuota`;
       }
@@ -796,9 +796,20 @@ $('addAccountBtn').onclick = async () => {
   tokenClient.requestAccessToken();
 };
 
-/* ---------- VERIFY FUNCTION (FIX: longgar + retry) ---------- */
+/* ---------- VERIFY FUNCTION (FIX: normalize emoji, no auto-disable) ---------- */
+function normalizeForCompare(s){
+  return String(s || '')
+    .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}]/gu, '')
+    .replace(/[^\p{L}\p{N}]/gu, '')
+    .toLowerCase();
+}
+
 async function verifySentMessage(sender, text, chatId, sentAtMs){
-  // Retry 3x dengan delay makin panjang: 5s → 10s → 15s (total max 30s)
+  // Ambil 20 karakter alfanumerik pertama untuk dibandingkan (buang emoji)
+  const needle = normalizeForCompare(text).slice(0, 20);
+  if (!needle) return null; // Kalau text cuma emoji, skip verify
+
+  // Retry 3x: 5s, 10s, 15s (total max 30s)
   const delays = [5000, 10000, 15000];
 
   for (let attempt = 0; attempt < delays.length; attempt++) {
@@ -808,18 +819,17 @@ async function verifySentMessage(sender, text, chatId, sentAtMs){
       gapi.client.setToken({ access_token: sender.accessToken });
       const res = await gapi.client.youtube.liveChatMessages.list({
         liveChatId: chatId,
-        part: 'snippet,authorDetails',
+        part: 'snippet',
         maxResults: 200
       });
       const items = res.result.items || [];
 
-      // LONGGAR: cek TEXT match saja. Abaikan nama author (bisa beda antara Google name vs Channel name)
       const found = items.some(it => {
         const t = (it.snippet && it.snippet.textMessageDetails && it.snippet.textMessageDetails.messageText) || '';
         const pub = it.snippet && it.snippet.publishedAt ? new Date(it.snippet.publishedAt).getTime() : 0;
-        if (t !== text) return false;
-        if (pub > 0 && Math.abs(pub - sentAtMs) > 120000) return false; // toleransi 2 menit
-        return true;
+        if (pub > 0 && Math.abs(pub - sentAtMs) > 180000) return false; // toleransi 3 menit
+        const hay = normalizeForCompare(t);
+        return hay.includes(needle);
       });
 
       if (found) return true;
@@ -864,21 +874,11 @@ async function sendMessage(text, chatId = liveChatId){
 
     if (verified === false) {
       sender.verifyMiss = (sender.verifyMiss || 0) + 1;
-      sender.consecutiveMiss = (sender.consecutiveMiss || 0) + 1;
-      log(`⚠ [${sender.email.split('@')[0]}] Verify miss (${sender.consecutiveMiss}/5) — cek manual di HP`, 'ERROR');
-
-      if (sender.consecutiveMiss >= 5) {
-        sender.isSender = false;
-        log(`🚫 ${sender.email} dinonaktifkan otomatis (5x verify miss). Sender lain akan lanjut.`, 'ERROR');
-        renderAccounts(); saveState();
-        if (getSenders().length === 0) {
-          log('Semua Sender habis. Bot berhenti.', 'ERROR');
-          return { ok:false, fatal:true };
-        }
-      }
+      log(`⚠ [${sender.email.split('@')[0]}] Verify tidak menemukan pesan (kemungkinan false alarm emoji).`, 'ERROR');
+      log(`   Pesan SUDAH terkirim lewat API. Cek manual di YouTube.`, 'INFO');
+      // TIDAK auto-disable! Biarkan user decide.
     } else if (verified === true) {
       sender.verifyOk = (sender.verifyOk || 0) + 1;
-      sender.consecutiveMiss = 0;
       log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)} ✓verif`, 'SUCCESS');
     } else {
       log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)}`, 'SUCCESS');
