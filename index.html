@@ -18,6 +18,7 @@
   .btn-red:disabled, .btn-green:disabled, button:disabled { opacity:0.4; cursor:not-allowed; }
   .log { font-family: monospace; font-size:11px; }
   .acc-row { display:flex; align-items:center; gap:6px; background:#0a0a0a; padding:8px; border-radius:10px; border:1px solid #222; margin-bottom:6px; flex-wrap:nowrap; }
+  .acc-row.stale { border-color: #7f1d1d; background: #1a0808; }
   .prog-bar { height:10px; background:#222; border-radius:9999px; overflow:hidden; }
   .prog-fill { height:100%; background:linear-gradient(90deg,#ff0000,#f59e0b,#16a34a); transition:width 0.4s; }
   .stat-box { background:#0a0a0a; border:1px solid #222; border-radius:12px; padding:10px 6px; text-align:center; min-width:0; }
@@ -28,6 +29,7 @@
   .msg-row { display:flex; gap:6px; margin-bottom:8px; align-items:flex-start; }
   .msg-textarea { flex:1; min-width:0; }
   .del-btn { background:#27272a; padding:8px 10px; border-radius:8px; font-size:16px; flex-shrink:0; }
+  .refresh-btn { background:#7f1d1d; padding:6px 10px; border-radius:8px; font-size:14px; flex-shrink:0; color:#fca5a5; font-weight:bold; }
   #libStatus { font-size:10px; padding:3px 8px; border-radius:9999px; font-weight:600; }
   @media (max-width: 480px) {
     body { padding: 8px; }
@@ -64,7 +66,8 @@
   </div>
   <div class="warn-box">
     • <b>Owner</b> (1 akun): Ambil LiveChatId. Kuota owner tidak dipakai kirim.<br>
-    • <b>Sender</b> (banyak): Pengirim pesan. 1 akun ≈ 500 pesan/hari.
+    • <b>Sender</b> (banyak): Pengirim pesan. 1 akun ≈ 500 pesan/hari.<br>
+    • Token Google berlaku <b>~1 jam</b>. Kalau muncul tombol <b>🔑 Login Ulang</b>, klik untuk refresh.
   </div>
   <div id="accountsList" class="space-y-2 max-h-[280px] overflow-auto pr-1">
     <div class="text-zinc-500 text-center py-6 text-xs">Belum ada akun. Klik "+ Akun".</div>
@@ -74,6 +77,7 @@
   <div class="flex gap-2 mb-3 items-center flex-wrap">
     <button id="saveClientIdBtn" class="text-[11px] bg-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-700">💾 Simpan Client ID</button>
     <button id="reloadLibsBtn" class="text-[11px] bg-zinc-800 px-3 py-1.5 rounded-lg hover:bg-zinc-700">🔄 Reload Library</button>
+    <button id="refreshAllBtn" class="text-[11px] bg-orange-900 px-3 py-1.5 rounded-lg hover:bg-orange-800">🔑 Refresh Semua Token</button>
     <span id="clientIdSaved" class="text-[11px] text-green-400 hidden">✓ Tersimpan!</span>
   </div>
   <div class="warn-box">
@@ -248,6 +252,14 @@ function errInfo(e){
   const er = e && e.result && e.result.error;
   return { code: er ? er.code : null, reason: er && er.errors && er.errors[0] ? er.errors[0].reason : '', msg: er ? er.message : (e && e.message) || String(e) };
 }
+function isAuthError(info){
+  if (!info) return false;
+  if (info.code === 401) return true;
+  if (info.reason === 'authError') return true;
+  if (info.msg && /invalid authentication credentials/i.test(info.msg)) return true;
+  if (info.msg && /Expected OAuth 2 access token/i.test(info.msg)) return true;
+  return false;
+}
 function setBadge(text, cls){ $('statusBadge').textContent = text; $('statusBadge').className = 'px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-sm whitespace-nowrap ' + cls; }
 function updateCounter(){ $('counter').textContent = `Terkirim: ${sentCount} • Kuota ≈ ${sentCount*20} unit`; }
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -293,7 +305,6 @@ function startLibPolling() {
       clearInterval(libPolling); libPolling = null;
       updateLibStatus('✗ Libs Timeout', '#fca5a5', '#7f1d1d');
       log('Library Google tidak termuat setelah 15 detik. Cek koneksi / matikan adblock.', 'ERROR');
-      log('Klik "🔄 Reload Library" untuk coba lagi.', 'INFO');
     }
   }, 100);
 }
@@ -337,7 +348,9 @@ function renderAccounts() {
     return;
   }
   accounts.forEach(acc => {
-    const row = document.createElement('div'); row.className = 'acc-row';
+    const expired = !isValid(acc);
+    const row = document.createElement('div');
+    row.className = 'acc-row' + (expired ? ' stale' : '');
 
     const ownerWrap = document.createElement('label');
     ownerWrap.className = 'flex flex-col items-center cursor-pointer'; ownerWrap.title = 'Jadikan Owner';
@@ -366,25 +379,37 @@ function renderAccounts() {
     img.onerror = () => { img.style.background = '#555'; img.removeAttribute('src'); };
 
     const info = document.createElement('div'); info.className = 'flex-1 min-w-0';
-    const expired = !isValid(acc);
     const ownerBadge = acc.isOwner ? '<span class="ml-1 px-1 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-[8px] font-bold">OWNER</span>' : '';
     const senderBadge = acc.isSender ? '<span class="ml-1 px-1 py-0.5 rounded bg-green-500/20 text-green-300 text-[8px] font-bold">SENDER</span>' : '';
-    const expBadge = expired ? '<span class="ml-1 px-1 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold">EXP</span>' : '';
+    const expBadge = expired ? '<span class="ml-1 px-1 py-0.5 rounded bg-red-500/20 text-red-300 text-[8px] font-bold">TOKEN EXPIRED</span>' : '';
 
     const vOk = acc.verifyOk || 0;
     const vMiss = acc.verifyMiss || 0;
-    let statsLine = `${escapeHtml(acc.email)} • ${acc.sentCount || 0} pesan`;
-    if (vOk > 0 || vMiss > 0) {
-      statsLine += ` • <span class="text-green-400">✓${vOk}</span>`;
-      if (vMiss > 0) statsLine += ` <span class="text-red-400">⚠${vMiss}</span>`;
+    let statsLine = '';
+    if (expired) {
+      statsLine = `<span class="text-red-400 font-bold">🔑 Klik tombol "Login Ulang" untuk refresh token</span>`;
     } else {
-      statsLine += ` • ${(acc.sentCount || 0) * 20}/10000 kuota`;
+      statsLine = `${escapeHtml(acc.email)} • ${acc.sentCount || 0} pesan`;
+      if (vOk > 0 || vMiss > 0) {
+        statsLine += ` • <span class="text-green-400">✓${vOk}</span>`;
+        if (vMiss > 0) statsLine += ` <span class="text-red-400">⚠${vMiss}</span>`;
+      }
     }
 
     info.innerHTML = `
       <div class="text-[11px] font-bold truncate text-white">${escapeHtml(acc.name || acc.email)}${ownerBadge}${senderBadge}${expBadge}</div>
       <div class="text-[9px] text-zinc-500 truncate">${statsLine}</div>
     `;
+
+    // Tombol refresh untuk akun expired
+    let refreshBtn = null;
+    if (expired) {
+      refreshBtn = document.createElement('button');
+      refreshBtn.className = 'refresh-btn';
+      refreshBtn.textContent = '🔑';
+      refreshBtn.title = 'Login ulang untuk refresh token';
+      refreshBtn.onclick = () => reLoginAccount(acc);
+    }
 
     const del = document.createElement('button');
     del.className = 'text-red-400 px-1 text-base flex-shrink-0'; del.textContent = '🗑';
@@ -397,20 +422,83 @@ function renderAccounts() {
       log(`Akun ${acc.email} dihapus`, 'INFO');
     };
 
-    row.append(ownerWrap, senderWrap, img, info, del);
+    row.append(ownerWrap, senderWrap, img, info);
+    if (refreshBtn) row.appendChild(refreshBtn);
+    row.appendChild(del);
     el.appendChild(row);
   });
 
   const senders = getSenders();
   const owner = getOwner();
+  const stale = accounts.filter(a => !isValid(a)).length;
   if (senders.length) {
     const ownerPart = owner ? ` • O:${owner.email.split('@')[0]}` : ' • ⚠NoOwner';
     setBadge(`🟢 ${senders.length} Sender${ownerPart}`, owner ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200');
+  } else if (stale > 0) {
+    setBadge(`🔑 ${stale} token expired`, 'bg-red-900 text-red-200');
   } else {
     setBadge('⚪ Belum ada Sender', 'bg-zinc-800');
   }
   refreshButtons();
 }
+
+/* ---------- RE-LOGIN AKUN ---------- */
+async function reLoginAccount(acc){
+  if (running || batchRunning) { log('Hentikan bot dulu!', 'ERROR'); return; }
+  const clientId = $('clientIdInput').value.trim();
+  if (!clientId.endsWith('.apps.googleusercontent.com')) { log('Client ID tidak valid', 'ERROR'); return; }
+  const gisOk = !!(window.google && window.google.accounts && window.google.accounts.oauth2);
+  if (!gisOk) { log('Library Google belum siap', 'ERROR'); return; }
+
+  log(`🔑 Login ulang untuk ${acc.email}...`);
+  const tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/youtube.force-ssl openid email profile',
+    prompt: 'select_account',
+    login_hint: acc.email,
+    callback: async resp => {
+      if (resp.error){ log('Auth error: ' + resp.error, 'ERROR'); return; }
+      acc.accessToken = resp.access_token;
+      acc.expiresAt = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+      gapi.client.setToken({ access_token: acc.accessToken });
+
+      // Update nama & channel ID (kalau berubah)
+      try {
+        const ui = await gapi.client.oauth2.userinfo.get();
+        acc.email = ui.result.email;
+        acc.name = ui.result.name;
+        acc.picture = ui.result.picture;
+      } catch(e){}
+      try {
+        const me = await gapi.client.youtube.channels.list({ part: 'id', mine: true });
+        acc.myChannelId = me.result.items && me.result.items[0] ? me.result.items[0].id : null;
+      } catch(e){}
+
+      renderAccounts(); saveState();
+      log(`✓ Token ${acc.email} berhasil di-refresh`, 'SUCCESS');
+    },
+    error_callback: err => log('Popup gagal: ' + (err.type || err.message), 'ERROR')
+  });
+  tokenClient.requestAccessToken();
+}
+
+/* ---------- REFRESH SEMUA TOKEN ---------- */
+$('refreshAllBtn').onclick = () => {
+  if (running || batchRunning) { log('Hentikan bot dulu!', 'ERROR'); return; }
+  const stale = accounts.filter(a => !isValid(a));
+  if (!stale.length) { log('Semua token masih valid, tidak perlu refresh', 'INFO'); return; }
+  log(`🔑 Perlu refresh ${stale.length} akun. Akan dibuka popup berurutan...`, 'INFO');
+  // Re-login satu per satu dengan delay (biar popup tidak diblokir)
+  let i = 0;
+  const next = () => {
+    if (i >= stale.length) { log('✓ Semua token selesai di-refresh', 'SUCCESS'); return; }
+    const acc = stale[i]; i++;
+    reLoginAccount(acc);
+    // Delay 8 detik sebelum login berikutnya
+    setTimeout(next, 8000);
+  };
+  next();
+};
 
 /* ---------- Save / Restore ---------- */
 const KEY = 'ytac_state';
@@ -476,7 +564,13 @@ function restoreState(){
     }));
     if (s.liveChatId) { liveChatId = s.liveChatId; $('chatIdText').textContent = liveChatId; $('chatIdBox').classList.remove('hidden'); }
     if (s.queue && s.queue.length) { queue = s.queue; renderQueue(); }
-    log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif`, 'SUCCESS');
+    const stale = accounts.filter(a => !isValid(a)).length;
+    if (stale > 0) {
+      log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif, ⚠ ${stale} token expired`, 'INFO');
+      log(`⚠ ${stale} akun perlu login ulang. Klik tombol 🔑 di baris akun yang merah, atau "Refresh Semua Token".`, 'ERROR');
+    } else {
+      log(`Dipulihkan: ${accounts.length} akun, ${getSenders().length} sender aktif`, 'SUCCESS');
+    }
   }
   if (s.selectedVideos && s.selectedVideos.length) selectedVideos = new Set(s.selectedVideos);
   renderAccounts();
@@ -631,7 +725,6 @@ $('addAccountBtn').onclick = async () => {
 
   if (!gisOk || !gapiOk) {
     log('Library Google belum siap. Status: ' + (gisOk ? 'GIS✓' : 'GIS⏳') + ' ' + (gapiOk ? 'GAPI✓' : 'GAPI⏳'), 'ERROR');
-    log('Tunggu beberapa detik, atau klik "🔄 Reload Library".', 'INFO');
     if (!libPolling) startLibPolling();
     return;
   }
@@ -641,10 +734,7 @@ $('addAccountBtn').onclick = async () => {
   }
 
   try {
-    if (gapiReadyPromise) {
-      log('Menunggu GAPI client siap...');
-      await gapiReadyPromise;
-    }
+    if (gapiReadyPromise) await gapiReadyPromise;
   } catch(e) {
     log('GAPI client gagal init: ' + e.message, 'ERROR');
     return;
@@ -682,7 +772,7 @@ $('addAccountBtn').onclick = async () => {
       const existing = accounts.find(a => a.id === accountId);
       if (existing) {
         Object.assign(existing, { accessToken, expiresAt, name, picture, myChannelId });
-        log(`Akun ${email} diperbarui`, 'SUCCESS');
+        log(`Akun ${email} token diperbarui`, 'SUCCESS');
       } else {
         const isFirst = accounts.length === 0;
         const hasOwner = accounts.some(a => a.isOwner);
@@ -699,16 +789,15 @@ $('addAccountBtn').onclick = async () => {
       const msg = err.type || err.message || 'Unknown';
       log('Popup gagal/ditutup: ' + msg, 'ERROR');
       if (msg === 'popup_closed' || msg === 'popup_failed_to_open') {
-        log('Tips: Pastikan popup tidak diblokir browser. Coba buka di Chrome/Safari terbaru.', 'INFO');
+        log('Tips: Pastikan popup tidak diblokir browser.', 'INFO');
       }
     }
   });
   tokenClient.requestAccessToken();
 };
 
-/* ---------- VERIFY FUNCTION (NEW) ---------- */
+/* ---------- VERIFY FUNCTION ---------- */
 async function verifySentMessage(sender, text, chatId, sentAtMs){
-  // Tunggu 3.5 detik agar YouTube proses & muncul di API
   await new Promise(r => setTimeout(r, 3500));
   try {
     gapi.client.setToken({ access_token: sender.accessToken });
@@ -729,7 +818,12 @@ async function verifySentMessage(sender, text, chatId, sentAtMs){
     });
     return found;
   } catch(e) {
-    // Kalau error (misal quota habis), return null = unknown, jangan tandai miss
+    const info = errInfo(e);
+    if (isAuthError(info)) {
+      log(`⚠ Verify gagal: token ${sender.email.split('@')[0]} sudah tidak valid`, 'ERROR');
+      sender.expiresAt = 0;
+      renderAccounts(); saveState();
+    }
     return null;
   }
 }
@@ -752,7 +846,6 @@ async function sendMessage(text, chatId = liveChatId){
     sender.sentCount = (sender.sentCount || 0) + 1;
     sentCount++; updateCounter();
 
-    // VERIFY (kalau diaktifkan)
     const verifyOn = $('verifyCheck') && $('verifyCheck').checked;
     let verified = null;
     if (verifyOn) {
@@ -761,18 +854,17 @@ async function sendMessage(text, chatId = liveChatId){
     }
 
     if (verified === false) {
-      // API OK tapi pesan TIDAK muncul → shadowban
       sender.verifyMiss = (sender.verifyMiss || 0) + 1;
       sender.consecutiveMiss = (sender.consecutiveMiss || 0) + 1;
       log(`⚠ [${sender.email.split('@')[0]}] Pesan TIDAK muncul di chat! (miss ${sender.consecutiveMiss}/3)`, 'ERROR');
-      log(`   Kemungkinan: shadowban / akun baru / chat mode "subscribers only"`, 'INFO');
+      log(`   Kemungkinan: shadowban / akun baru / chat "subscribers only"`, 'INFO');
 
       if (sender.consecutiveMiss >= 3) {
         sender.isSender = false;
         log(`🚫 ${sender.email} dinonaktifkan otomatis (3x shadowban). Sender lain akan lanjut.`, 'ERROR');
         renderAccounts(); saveState();
         if (getSenders().length === 0) {
-          log('Semua Sender habis/dinonaktifkan. Bot berhenti.', 'ERROR');
+          log('Semua Sender habis. Bot berhenti.', 'ERROR');
           return { ok:false, fatal:true };
         }
       }
@@ -781,29 +873,35 @@ async function sendMessage(text, chatId = liveChatId){
       sender.consecutiveMiss = 0;
       log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)} ✓verif`, 'SUCCESS');
     } else {
-      // verified === null → tidak bisa verify (misal quota verify habis)
       log(`✓ [${sender.email.split('@')[0]}] ${text.slice(0, 45)}`, 'SUCCESS');
     }
 
     renderAccounts(); saveState();
     return { ok:true };
   } catch(e){
-    const { code, reason, msg } = errInfo(e);
-    log(`✗ [${sender.email.split('@')[0]}] ${code || '-'} ${reason}: ${msg.slice(0, 60)}`, 'ERROR');
+    const info = errInfo(e);
+    log(`✗ [${sender.email.split('@')[0]}] ${info.code || '-'} ${info.reason}: ${info.msg.slice(0, 60)}`, 'ERROR');
+
+    // === HANDLE 401 (token expired) ===
+    if (isAuthError(info)) {
+      sender.expiresAt = 0; // invalidate
+      log(`🔑 Token ${sender.email} kadaluwarsa. Akun ditandai perlu login ulang.`, 'ERROR');
+      renderAccounts(); saveState();
+      if (getSenders().length > 0) {
+        log(`   Sender lain akan lanjut.`, 'INFO');
+        return { ok:false, fatal:false };
+      }
+      return { ok:false, fatal:true };
+    }
+
     const perChat = ['liveChatEnded','liveChatDisabled','liveChatNotFound','forbidden'];
-    if (reason === 'quotaExceeded' || reason === 'dailyLimitExceeded') {
+    if (info.reason === 'quotaExceeded' || info.reason === 'dailyLimitExceeded') {
       sender.isSender = false;
       log(`⚠ ${sender.email} kuota habis, dinonaktifkan.`, 'ERROR');
       renderAccounts(); saveState();
       if (getSenders().length > 0) return { ok:false, fatal:false };
     }
-    if (code === 401) {
-      sender.isSender = false;
-      log(`⚠ ${sender.email} expired, dinonaktifkan.`, 'ERROR');
-      renderAccounts(); saveState();
-      if (getSenders().length > 0) return { ok:false, fatal:false };
-    }
-    return { ok:false, fatal: getSenders().length === 0, dropChat: perChat.includes(reason) };
+    return { ok:false, fatal: getSenders().length === 0, dropChat: perChat.includes(info.reason) };
   }
 }
 
@@ -815,6 +913,33 @@ $('startBatchBtn').onclick = async () => {
   if (!getSenders().length) { log('Belum ada Sender aktif', 'ERROR'); return; }
   const msgs = getBatchMsgs();
   if (!msgs.length) { log('Daftar pesan kosong', 'ERROR'); return; }
+
+  // === PREFLIGHT: cek apakah Owner (atau fallback) valid & token OK ===
+  const fetchAcc = getOwner() || getSenders()[0];
+  if (!fetchAcc) {
+    log('❌ Tidak ada akun valid. Login ulang dulu.', 'ERROR');
+    return;
+  }
+  if (!isValid(fetchAcc)) {
+    log(`❌ Token ${fetchAcc.email} kadaluwarsa. Klik tombol 🔑 di baris akun untuk login ulang.`, 'ERROR');
+    renderAccounts();
+    return;
+  }
+  // Test call kecil untuk pastikan token masih valid di Google
+  try {
+    gapi.client.setToken({ access_token: fetchAcc.accessToken });
+    await gapi.client.youtube.videos.list({ part: 'id', id: 'dQw4w9WgXcQ' });
+  } catch(e) {
+    const info = errInfo(e);
+    if (isAuthError(info)) {
+      log(`❌ Token ${fetchAcc.email} TIDAK VALID di Google (meskipun localStorage bilang masih valid).`, 'ERROR');
+      log(`   Solusi: Klik tombol 🔑 di baris ${fetchAcc.email} untuk login ulang.`, 'INFO');
+      fetchAcc.expiresAt = 0;
+      renderAccounts(); saveState();
+      return;
+    }
+    // Error lain (bukan auth) - lanjut saja
+  }
 
   const commentsPerEvent = Math.max(1, parseInt($('commentsPerEvent').value) || 1);
   const gapSame = Math.max(5, parseInt($('gapSameEvent').value) || 15) * 1000;
@@ -839,7 +964,6 @@ $('startBatchBtn').onclick = async () => {
 
   log(`🚀 BATCH START: ${selected.length} event × ${commentsPerEvent} = ${totalMessages} pesan`, 'BATCH');
 
-  const fetchAcc = getOwner() || getSenders()[0];
   gapi.client.setToken({ access_token: fetchAcc.accessToken });
 
   let targets = [];
@@ -856,7 +980,19 @@ $('startBatchBtn').onclick = async () => {
         targets.push({ videoId: it.id, title: it.snippet.title, chatId: d.activeLiveChatId });
       }
     }
-  } catch(e) { log('Gagal ambil LiveChatId: ' + errInfo(e).msg, 'ERROR'); batchStop(); return; }
+  } catch(e) {
+    const info = errInfo(e);
+    if (isAuthError(info)) {
+      log(`❌ Gagal ambil LiveChatId: Token ${fetchAcc.email} expired.`, 'ERROR');
+      log(`   Solusi: Klik tombol 🔑 di baris ${fetchAcc.email} → login ulang.`, 'INFO');
+      fetchAcc.expiresAt = 0;
+      renderAccounts(); saveState();
+    } else {
+      log('Gagal ambil LiveChatId: ' + info.msg, 'ERROR');
+    }
+    batchStop();
+    return;
+  }
 
   if (!targets.length) { log('Tidak ada target valid', 'ERROR'); batchStop(); return; }
 
@@ -991,7 +1127,9 @@ $('connectBtn').onclick = async () => {
   const videoId = match ? match[1] : null;
   if (!videoId){ log('Video ID tidak valid', 'ERROR'); return; }
   const user = getOwner() || accounts.find(a => isValid(a));
-  if (user) gapi.client.setToken({ access_token: user.accessToken });
+  if (!user) { log('Tidak ada akun valid. Login dulu.', 'ERROR'); return; }
+  if (!isValid(user)) { log(`Token ${user.email} kadaluwarsa. Klik 🔑 untuk login ulang.`, 'ERROR'); return; }
+  gapi.client.setToken({ access_token: user.accessToken });
   liveChatId = null; $('chatIdBox').classList.add('hidden');
   try {
     const res = await gapi.client.youtube.videos.list({ part: 'liveStreamingDetails,snippet', id: videoId });
@@ -1004,7 +1142,16 @@ $('connectBtn').onclick = async () => {
     $('chatIdBox').classList.remove('hidden');
     refreshButtons();
     log('LiveChatId: ' + liveChatId, 'SUCCESS');
-  } catch(e){ log('Error: ' + errInfo(e).msg, 'ERROR'); }
+  } catch(e) {
+    const info = errInfo(e);
+    if (isAuthError(info)) {
+      log(`Token ${user.email} expired. Klik 🔑 untuk login ulang.`, 'ERROR');
+      user.expiresAt = 0;
+      renderAccounts(); saveState();
+    } else {
+      log('Error: ' + info.msg, 'ERROR');
+    }
+  }
 };
 
 function refreshButtons(){
